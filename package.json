@@ -26,7 +26,8 @@
     "build": "tsc",
     "fmt": "prettier --write .",
     "fmt:check": "prettier -c .",
-    "test": "jest"
+    "test": "jest",
+    "prepare": "husky"
   },
   "files": [
     "src/*",
@@ -37,6 +38,7 @@
   ],
   "devDependencies": {
     "@types/node": "^22.15.2",
+    "husky": "^9.1.7",
     "jest": "^29.7.0",
     "prettier": "^3.5.3",
     "rimraf": "^6.0.1",
