@@ -21,6 +21,7 @@
   "author": "Kiril Yakymchuk <stbestich@gmail.com>",
   "type": "commonjs",
   "main": "dist/index.js",
+  "types": "src/index.d.ts",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "tsc",
@@ -30,11 +31,11 @@
     "prepare": "husky"
   },
   "files": [
-    "src/*",
+    "dist",
     "LICENSE",
     "README.md",
     "CHANGELOG.md",
-    "tsconfig.json"
+    "src/index.d.ts"
   ],
   "devDependencies": {
     "@nestjs/common": "^11.1.0",
@@ -43,7 +44,9 @@
     "husky": "^9.1.7",
     "jest": "^29.7.0",
     "prettier": "^3.5.3",
+    "reflect-metadata": "^0.2.2",
     "rimraf": "^6.0.1",
+    "rxjs": "^7.8.2",
     "sequelize": "^6.37.7",
     "sequelize-typescript": "^2.1.6",
     "sqlite3": "^5.1.7",
@@ -56,8 +59,10 @@
     "uuid": "^11.1.0"
   },
   "peerDependencies": {
-    "@nestjs/common": "^11.1.0",
-    "sequelize": "^6.37.7",
-    "sequelize-typescript": "^2.1.6"
+    "@nestjs/common": "11.x",
+    "reflect-metadata": "0.x",
+    "sequelize": "6.x",
+    "sequelize-typescript": "2.x",
+    "rxjs": "7.x"
   }
 }

@@ -7,7 +7,6 @@ import {
 import {
   Transaction,
   WhereOptions,
-  ModelAttributes,
   CreationAttributes,
   ValidationError,
 } from 'sequelize';
@@ -16,13 +15,17 @@ import { Model, ModelCtor } from 'sequelize-typescript';
 import { IRepositoryOptions } from './IRepositoryOptions';
 import { v7 as uuidv7 } from 'uuid';
 
-export class AbstractRepository<T extends Model> implements IRepository<T> {
+export class AbstractRepository<
+  TModel extends Model,
+  TDto = CreationAttributes<TModel>,
+> implements IRepository<TModel, TDto>
+{
   protected readonly logger: Logger;
   protected readonly autoGenerateId: { enable: boolean; field: string };
   protected readonly includeAllByDefault: boolean;
 
   constructor(
-    protected readonly model: ModelCtor<T>,
+    protected readonly model: ModelCtor<TModel>,
     options: IRepositoryOptions = {},
   ) {
     this.logger = options.logger || new Logger(this.constructor.name);
@@ -34,21 +37,25 @@ export class AbstractRepository<T extends Model> implements IRepository<T> {
   }
 
   public async create(
-    dto: CreationAttributes<T>,
+    dto: TDto,
     transaction?: Transaction,
     customError: typeof ForbiddenException = ForbiddenException,
-  ): Promise<T> {
-    const data: any = { ...dto };
-
-    if (this.autoGenerateId && !dto[this.autoGenerateId.field]) {
-      data[this.autoGenerateId.field] = uuidv7();
-    }
+  ): Promise<TModel> {
+    const id = this.autoGenerateId
+      ? { [this.autoGenerateId.field]: uuidv7() }
+      : {};
 
     try {
-      return this.model.create(data, {
-        include: this.includeAllByDefault ? { all: true } : undefined,
-        transaction,
-      });
+      return this.model.create(
+        {
+          ...(dto as any),
+          ...id,
+        },
+        {
+          include: this.includeAllByDefault ? { all: true } : undefined,
+          transaction,
+        },
+      );
     } catch (e) {
       if (e instanceof ValidationError) {
         throw new customError(e);
@@ -64,7 +71,7 @@ export class AbstractRepository<T extends Model> implements IRepository<T> {
     primaryKey: string | number,
     transaction?: Transaction,
     customError: typeof NotFoundException = NotFoundException,
-  ): Promise<T> {
+  ): Promise<TModel> {
     const entity = await this.model.findByPk(primaryKey, {
       include: this.includeAllByDefault ? { all: true } : undefined,
       transaction,
@@ -81,10 +88,10 @@ export class AbstractRepository<T extends Model> implements IRepository<T> {
   }
 
   public async findOne(
-    options: WhereOptions<T>,
+    options: WhereOptions<TModel>,
     transaction?: Transaction,
     customError: typeof NotFoundException = NotFoundException,
-  ): Promise<T> {
+  ): Promise<TModel> {
     const entity = await this.model.findOne({
       where: options,
       include: this.includeAllByDefault ? { all: true } : undefined,
@@ -102,10 +109,10 @@ export class AbstractRepository<T extends Model> implements IRepository<T> {
   }
 
   public async findAll(
-    options: WhereOptions<T>,
+    options: WhereOptions<TModel>,
     transaction?: Transaction,
     customError: typeof NotFoundException = NotFoundException,
-  ): Promise<T[]> {
+  ): Promise<TModel[]> {
     const entities = await this.model.findAll({
       where: options,
       include: this.includeAllByDefault ? { all: true } : undefined,
@@ -123,9 +130,9 @@ export class AbstractRepository<T extends Model> implements IRepository<T> {
   public async findAllPaginated(
     limit: number,
     offset: number,
-    options?: WhereOptions<T>,
+    options?: WhereOptions<TModel>,
     transaction?: Transaction,
-  ): Promise<{ rows: T[]; count: number }> {
+  ): Promise<{ rows: TModel[]; count: number }> {
     return this.model.findAndCountAll({
       where: options,
       limit,
@@ -138,9 +145,9 @@ export class AbstractRepository<T extends Model> implements IRepository<T> {
 
   public async update(
     primaryKey: string | number,
-    options?: Partial<ModelAttributes<T>>,
+    options?: Partial<TDto>,
     transaction?: Transaction,
-  ): Promise<T> {
+  ): Promise<TModel> {
     const entity = await this.findByPk(primaryKey, transaction);
     return entity.set(options as any).save({ transaction });
   }

@@ -3608,7 +3608,9 @@ __metadata:
     husky: "npm:^9.1.7"
     jest: "npm:^29.7.0"
     prettier: "npm:^3.5.3"
+    reflect-metadata: "npm:^0.2.2"
     rimraf: "npm:^6.0.1"
+    rxjs: "npm:^7.8.2"
     sequelize: "npm:^6.37.7"
     sequelize-typescript: "npm:^2.1.6"
     sqlite3: "npm:^5.1.7"
@@ -3617,9 +3619,10 @@ __metadata:
     typescript: "npm:^5.8.3"
     uuid: "npm:^11.1.0"
   peerDependencies:
-    "@nestjs/common": ^11.1.0
-    sequelize: ^6.37.7
-    sequelize-typescript: ^2.1.6
+    "@nestjs/common": 11.x
+    reflect-metadata: 0.x
+    sequelize: 6.x
+    sequelize-typescript: 2.x
   languageName: unknown
   linkType: soft
 
@@ -4056,6 +4059,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"reflect-metadata@npm:^0.2.2":
+  version: 0.2.2
+  resolution: "reflect-metadata@npm:0.2.2"
+  checksum: 10c0/1cd93a15ea291e420204955544637c264c216e7aac527470e393d54b4bb075f10a17e60d8168ec96600c7e0b9fcc0cb0bb6e91c3fbf5b0d8c9056f04e6ac1ec2
+  languageName: node
+  linkType: hard
+
 "require-directory@npm:^2.1.1":
   version: 2.1.1
   resolution: "require-directory@npm:2.1.1"
@@ -4153,6 +4163,15 @@ __metadata:
   bin:
     rimraf: dist/esm/bin.mjs
   checksum: 10c0/b30b6b072771f0d1e73b4ca5f37bb2944ee09375be9db5f558fcd3310000d29dfcfa93cf7734d75295ad5a7486dc8e40f63089ced1722a664539ffc0c3ece8c6
+  languageName: node
+  linkType: hard
+
+"rxjs@npm:^7.8.2":
+  version: 7.8.2
+  resolution: "rxjs@npm:7.8.2"
+  dependencies:
+    tslib: "npm:^2.1.0"
+  checksum: 10c0/1fcd33d2066ada98ba8f21fcbbcaee9f0b271de1d38dc7f4e256bfbc6ffcdde68c8bfb69093de7eeb46f24b1fb820620bf0223706cff26b4ab99a7ff7b2e2c45
   languageName: node
   linkType: hard
 
@@ -4706,7 +4725,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:2.8.1":
+"tslib@npm:2.8.1, tslib@npm:^2.1.0":
   version: 2.8.1
   resolution: "tslib@npm:2.8.1"
   checksum: 10c0/9c4759110a19c53f992d9aae23aac5ced636e99887b51b9e61def52611732872ff7668757d4e4c61f19691e36f4da981cd9485e869b4a7408d689f6bf1f14e62

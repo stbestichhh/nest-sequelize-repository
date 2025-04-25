@@ -1,15 +1,10 @@
 import { Model } from 'sequelize-typescript';
-import {
-  CreationAttributes,
-  ModelAttributes,
-  Transaction,
-  WhereOptions,
-} from 'sequelize';
+import { Transaction, WhereOptions } from 'sequelize';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 
-export interface IRepository<T extends Model> {
+export interface IRepository<T extends Model, TDto> {
   create(
-    dto: CreationAttributes<T>,
+    dto: TDto,
     transaction?: Transaction,
     customError?: typeof ForbiddenException,
   ): Promise<T>;
@@ -36,7 +31,7 @@ export interface IRepository<T extends Model> {
   ): Promise<{ rows: T[]; count: number }>;
   update(
     primaryKey: string | number,
-    options?: Partial<ModelAttributes<T>>,
+    options?: Partial<TDto>,
     transaction?: Transaction,
   ): Promise<T>;
   delete(

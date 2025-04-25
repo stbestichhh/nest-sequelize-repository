@@ -1,107 +1,125 @@
-import { Logger } from '@nestjs/common';
-import {
-  ForbiddenException,
-  InternalServerErrorException,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
-import {
-  Transaction,
-  WhereOptions,
-  ModelAttributes,
-  CreationAttributes,
-  ValidationError,
-} from 'sequelize';
+import { ForbiddenException, NotFoundException, Logger } from '@nestjs/common';
+import { Transaction, WhereOptions, CreationAttributes } from 'sequelize';
 import { Model, ModelCtor } from 'sequelize-typescript';
-import { v7 as uuidv7 } from 'uuid';
 
+/**
+ * Configuration options for the abstract repository.
+ */
 export interface IRepositoryOptions {
-  autoGenerateId?: { enable: boolean; field?: string };
+  autoGenerateId?: {
+    enable: boolean;
+    field?: string; // Defaults to 'id' if not specified
+  };
   includeAllByDefault?: boolean;
   logger?: Logger;
 }
 
-export interface IRepository<T extends Model> {
+/**
+ * Generic repository interface exposing basic CRUD and transaction methods.
+ */
+export interface IRepository<TModel extends Model, TDto> {
   create(
-    dto: CreationAttributes<T>,
+    dto: TDto,
     transaction?: Transaction,
     customError?: typeof ForbiddenException,
-  ): Promise<T>;
+  ): Promise<TModel>;
+
   findByPk(
     primaryKey: string | number,
     transaction?: Transaction,
     customError?: typeof NotFoundException,
-  ): Promise<T>;
+  ): Promise<TModel>;
+
   findOne(
-    options: WhereOptions<T>,
+    options: WhereOptions<TModel>,
     transaction?: Transaction,
     customError?: typeof NotFoundException,
-  ): Promise<T>;
+  ): Promise<TModel>;
+
   findAll(
-    options?: WhereOptions<T>,
+    options?: WhereOptions<TModel>,
     transaction?: Transaction,
     customError?: typeof NotFoundException,
-  ): Promise<T[]>;
+  ): Promise<TModel[]>;
+
   findAllPaginated(
     limit: number,
     offset: number,
-    options?: WhereOptions<T>,
+    options?: WhereOptions<TModel>,
     transaction?: Transaction,
-  ): Promise<{ rows: T[]; count: number }>;
+  ): Promise<{ rows: TModel[]; count: number }>;
+
   update(
     primaryKey: string | number,
-    options?: Partial<ModelAttributes<T>>,
+    options?: Partial<TDto>,
     transaction?: Transaction,
-  ): Promise<T>;
+  ): Promise<TModel>;
+
   delete(
     primaryKey: string | number,
     force?: boolean,
     transaction?: Transaction,
   ): Promise<void>;
+
   transaction<R>(
     runInTransaction: (transaction: Transaction) => Promise<R>,
   ): Promise<R>;
 }
 
-export class AbstractRepository<T extends Model> implements IRepository<T> {
-  constructor(model: ModelCtor<T>, options: IRepositoryOptions = {});
-  public async create(
-    dto: CreationAttributes<T>,
+/**
+ * Base abstract class that can be extended to create model-specific repositories.
+ */
+export declare class AbstractRepository<
+  TModel extends Model,
+  TDto = CreationAttributes<TModel>,
+> implements IRepository<TModel, TDto>
+{
+  constructor(model: ModelCtor<TModel>, options?: IRepositoryOptions);
+
+  create(
+    dto: TDto,
     transaction?: Transaction,
-    customError: typeof ForbiddenException = ForbiddenException,
-  ): Promise<T>;
-  public async findByPk(
+    customError?: typeof ForbiddenException,
+  ): Promise<TModel>;
+
+  findByPk(
     primaryKey: string | number,
     transaction?: Transaction,
-    customError: typeof NotFoundException = NotFoundException,
-  ): Promise<T>;
-  public async findOne(
-    options: WhereOptions<T>,
+    customError?: typeof NotFoundException,
+  ): Promise<TModel>;
+
+  findOne(
+    options: WhereOptions<TModel>,
     transaction?: Transaction,
-    customError: typeof NotFoundException = NotFoundException,
-  ): Promise<T>;
-  public async findAll(
-    options: WhereOptions<T>,
+    customError?: typeof NotFoundException,
+  ): Promise<TModel>;
+
+  findAll(
+    options?: WhereOptions<TModel>,
     transaction?: Transaction,
-    customError: typeof NotFoundException = NotFoundException,
-  ): Promise<T[]>;
-  public async findAllPaginated(
+    customError?: typeof NotFoundException,
+  ): Promise<TModel[]>;
+
+  findAllPaginated(
     limit: number,
     offset: number,
-    options?: WhereOptions<T>,
+    options?: WhereOptions<TModel>,
     transaction?: Transaction,
-  ): Promise<{ rows: T[]; count: number }>;
-  public async update(
+  ): Promise<{ rows: TModel[]; count: number }>;
+
+  update(
     primaryKey: string | number,
-    options?: Partial<ModelAttributes<T>>,
+    options?: Partial<TDto>,
     transaction?: Transaction,
-  ): Promise<T>;
-  public async delete(
+  ): Promise<TModel>;
+
+  delete(
     primaryKey: string | number,
     force?: boolean,
     transaction?: Transaction,
   ): Promise<void>;
-  public async transaction<R>(
+
+  transaction<R>(
     runInTransaction: (transaction: Transaction) => Promise<R>,
   ): Promise<R>;
 }
