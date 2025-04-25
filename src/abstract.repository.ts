@@ -41,7 +41,7 @@ export class AbstractRepository<
     transaction?: Transaction,
     customError: typeof ForbiddenException = ForbiddenException,
   ): Promise<TModel> {
-    const id = this.autoGenerateId
+    const id = this.autoGenerateId.enable
       ? { [this.autoGenerateId.field]: uuidv7() }
       : {};
 
