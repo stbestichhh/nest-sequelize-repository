@@ -28,6 +28,10 @@ export class AbstractRepository<
     protected readonly model: ModelCtor<TModel>,
     options: IRepositoryOptions = {},
   ) {
+    if (new.target === AbstractRepository) {
+      throw new Error('AbstractRepository cannot be instantiated directly');
+    }
+
     this.logger = options.logger || new Logger(this.constructor.name);
     this.autoGenerateId = {
       enable: options.autoGenerateId?.enable ?? false,

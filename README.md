@@ -118,19 +118,6 @@ export class UserService {
 
 ---
 
-## 🧪 Testing
-
-You can test it without NestJS using just Sequelize + Sequelize-typescript:
-
-```ts
-const repo = new AbstractRepository(UserModel);
-await repo.create({ name: 'John', email: 'john@example.com' });
-```
-
-Unit tests for the abstract class can be found in the `tests/` folder.
-
----
-
 ## ⚙️ Options
 
 You can pass options when instantiating:
