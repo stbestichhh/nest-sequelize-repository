@@ -1,6 +1,7 @@
 import { Sequelize } from 'sequelize-typescript';
 import { User } from './models/user.model';
 import { UserRepository } from './user.repository';
+import { AbstractRepository } from '../src/abstract.repository';
 
 let sequelize: Sequelize;
 let userRepo: UserRepository;
@@ -20,6 +21,14 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await sequelize.close();
+});
+
+describe('Abstract Repository', () => {
+  it('should throw an error when instantiated directly', () => {
+    expect(() => new AbstractRepository({} as any)).toThrow(
+      'AbstractRepository cannot be instantiated directly',
+    );
+  });
 });
 
 describe('UserRepository', () => {
