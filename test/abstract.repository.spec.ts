@@ -41,6 +41,19 @@ describe('UserRepository', () => {
     expect(user.name).toBe('Alice');
   });
 
+  it('should throw on create with identical unique fields', async () => {
+    const dto = {
+      name: 'Alice',
+      email: 'alice@example.com',
+      unique_field: 'a',
+    };
+    await userRepo.create(dto);
+
+    await expect(userRepo.create(dto)).rejects.toThrow(
+      'Entity User already exists',
+    );
+  });
+
   it('should find a user by primary key', async () => {
     const created = await userRepo.create({
       name: 'Bob',

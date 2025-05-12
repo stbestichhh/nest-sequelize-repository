@@ -1,6 +1,6 @@
 {
   "name": "nest-sequelize-repository",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Abstract repository for Nest and Sequelize.js ORM",
   "keywords": [
     "sequelize.js",

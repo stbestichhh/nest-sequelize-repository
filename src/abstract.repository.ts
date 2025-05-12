@@ -8,7 +8,7 @@ import {
   Transaction,
   WhereOptions,
   CreationAttributes,
-  ValidationError,
+  UniqueConstraintError,
 } from 'sequelize';
 import { IRepository } from './IRepository';
 import { Model, ModelCtor } from 'sequelize-typescript';
@@ -50,7 +50,7 @@ export class AbstractRepository<
       : {};
 
     try {
-      return this.model.create(
+      return await this.model.create(
         {
           ...(dto as any),
           ...id,
@@ -61,10 +61,10 @@ export class AbstractRepository<
         },
       );
     } catch (e) {
-      if (e instanceof ValidationError) {
-        throw new customError(e);
-      }
       this.logger.error(e);
+      if (e instanceof UniqueConstraintError) {
+        throw new customError(`Entity ${this.model.name} already exists`);
+      }
       throw new InternalServerErrorException(
         'Unexpected error while creating entity',
       );
