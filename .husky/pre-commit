@@ -1,1 +1,1 @@
-yarn fmt:check
+pnpm fmt:check
