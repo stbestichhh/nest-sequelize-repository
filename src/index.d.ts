@@ -1,5 +1,15 @@
-import { ForbiddenException, NotFoundException, Logger } from '@nestjs/common';
-import { Transaction, WhereOptions, CreationAttributes } from 'sequelize';
+import { Logger } from '@nestjs/common';
+import {
+  Transaction,
+  WhereOptions,
+  CreationAttributes,
+  CreateOptions,
+  Attributes,
+  InstanceDestroyOptions,
+  InstanceRestoreOptions,
+  SaveOptions,
+  FindOptions,
+} from 'sequelize';
 import { Model, ModelCtor } from 'sequelize-typescript';
 
 /**
@@ -17,19 +27,19 @@ export interface IRepositoryOptions {
 export interface IRepository<TModel extends Model> {
   create(
     dto: CreationAttributes<TModel>,
-    options: CreateOptions<TModel>,
+    options?: CreateOptions<TModel>,
   ): Promise<TModel>;
   findByPk(
     primaryKey: string | number,
-    options: Omit<FindOptions<Attributes<TModel>>, 'where'>,
+    options?: Omit<FindOptions<Attributes<TModel>>, 'where'>,
   ): Promise<TModel | null>;
   findOne(
     query: WhereOptions<Attributes<TModel>>,
-    options: Omit<FindOptions<Attributes<TModel>>, 'where'>,
+    options?: Omit<FindOptions<Attributes<TModel>>, 'where'>,
   ): Promise<TModel | null>;
   findAll(
     query: WhereOptions<Attributes<TModel>>,
-    options: Omit<FindOptions<Attributes<TModel>>, 'where'>,
+    options?: Omit<FindOptions<Attributes<TModel>>, 'where'>,
   ): Promise<TModel[]>;
   updateByPk(
     primaryKey: string | number,
