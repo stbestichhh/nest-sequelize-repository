@@ -60,7 +60,8 @@ describe('UserRepository', () => {
       email: 'bob@example.com',
     });
     const found = await userRepo.findByPk(created.id);
-    expect(found.name).toBe('Bob');
+    expect(found).not.toBeNull();
+    expect(found!.name).toBe('Bob');
   });
 
   it('should update a user', async () => {
@@ -68,8 +69,9 @@ describe('UserRepository', () => {
       name: 'Charlie',
       email: 'charlie@ex.com',
     });
-    const updated = await userRepo.update(created.id, { name: 'Charles' });
-    expect(updated.name).toBe('Charles');
+    const updated = await userRepo.updateByPk(created.id, { name: 'Charles' });
+    expect(updated).not.toBeNull();
+    expect(updated!.name).toBe('Charles');
   });
 
   it('should delete a user', async () => {
@@ -77,23 +79,29 @@ describe('UserRepository', () => {
       name: 'Dave',
       email: 'dave@example.com',
     });
-    await userRepo.delete(user.id);
-    await expect(userRepo.findByPk(user.id)).rejects.toThrow(
-      `Entity of type User not found by primary key: ${user.id}`,
-    );
+    const deletedUser = await userRepo.deleteByPk(user.id);
+    expect(deletedUser).not.toBeNull();
+    expect(deletedUser!.deletedAt).not.toBeNull();
   });
 
-  it('should paginate results', async () => {
-    await userRepo.create({ name: 'User1', email: 'u1@x.com' });
-    await userRepo.create({ name: 'User2', email: 'u2@x.com' });
-    const { rows, count } = await userRepo.findAllPaginated(1, 0);
-    expect(rows.length).toBe(1);
-    expect(count).toBeGreaterThanOrEqual(2);
+  it('should restore a user', async () => {
+    const user = await userRepo.create({
+      name: 'Dave',
+      email: 'dave@example.com',
+      ...{ deletedAt: new Date() },
+    });
+
+    const restoredUser = await userRepo.restoreByPk(user.id);
+    expect(restoredUser).not.toBeNull();
+    expect(restoredUser!.deletedAt).toBeNull();
   });
 
   it('should run operations inside a transaction', async () => {
     const result = await userRepo.transaction(async (tx) => {
-      return await userRepo.create({ name: 'TxnUser', email: 'txn@x.com' }, tx);
+      return await userRepo.create(
+        { name: 'TxnUser', email: 'txn@x.com' },
+        { transaction: tx },
+      );
     });
 
     expect(result.id).toBeDefined();

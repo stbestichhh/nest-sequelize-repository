@@ -2,167 +2,181 @@ import {
   ForbiddenException,
   InternalServerErrorException,
   Logger,
-  NotFoundException,
 } from '@nestjs/common';
 import {
   Transaction,
   WhereOptions,
   CreationAttributes,
   UniqueConstraintError,
+  CreateOptions,
+  FindOptions,
+  Attributes,
+  SaveOptions,
+  InstanceDestroyOptions,
+  InstanceRestoreOptions,
 } from 'sequelize';
 import { IRepository } from './IRepository';
 import { Model, ModelCtor } from 'sequelize-typescript';
 import { IRepositoryOptions } from './IRepositoryOptions';
 import { v7 as uuidv7 } from 'uuid';
 
-export class AbstractRepository<
-  TModel extends Model,
-  TDto = CreationAttributes<TModel>,
-> implements IRepository<TModel, TDto>
+export class AbstractRepository<TModel extends Model>
+  implements IRepository<TModel>
 {
   protected readonly logger: Logger;
-  protected readonly autoGenerateId: { enable: boolean; field: string };
-  protected readonly includeAllByDefault: boolean;
+  protected readonly autoGenerateId: boolean;
+  protected readonly idField: string;
 
   constructor(
     protected readonly model: ModelCtor<TModel>,
     options: IRepositoryOptions = {},
   ) {
+    const {
+      autoGenerateId = false,
+      idField = 'id',
+      logger = new Logger(this.constructor.name),
+    } = options;
+
     if (new.target === AbstractRepository) {
       throw new Error('AbstractRepository cannot be instantiated directly');
     }
 
-    this.logger = options.logger || new Logger(this.constructor.name);
-    this.autoGenerateId = {
-      enable: options.autoGenerateId?.enable ?? false,
-      field: options.autoGenerateId?.field ?? 'id',
-    };
-    this.includeAllByDefault = options.includeAllByDefault ?? false;
+    this.logger = logger;
+    this.autoGenerateId = autoGenerateId;
+    this.idField = idField;
   }
 
   public async create(
-    dto: TDto,
-    transaction?: Transaction,
-    customError: typeof ForbiddenException = ForbiddenException,
+    dto: CreationAttributes<TModel>,
+    options?: CreateOptions<Attributes<TModel>>,
   ): Promise<TModel> {
-    const id = this.autoGenerateId.enable
-      ? { [this.autoGenerateId.field]: uuidv7() }
-      : {};
-
     try {
+      const id = this.autoGenerateId ? { [this.idField]: uuidv7() } : {};
+
       return await this.model.create(
         {
-          ...(dto as any),
+          ...dto,
           ...id,
         },
-        {
-          include: this.includeAllByDefault ? { all: true } : undefined,
-          transaction,
-        },
+        options,
       );
-    } catch (e) {
-      this.logger.error(e);
-      if (e instanceof UniqueConstraintError) {
-        throw new customError(`Entity ${this.model.name} already exists`);
+    } catch (error) {
+      this.logger.error(`create: ${error}`);
+
+      if (error instanceof UniqueConstraintError) {
+        throw new ForbiddenException(
+          `Entity ${this.model.name} already exists`,
+        );
       }
-      throw new InternalServerErrorException(
-        'Unexpected error while creating entity',
-      );
+      throw new InternalServerErrorException();
     }
   }
 
   public async findByPk(
     primaryKey: string | number,
-    transaction?: Transaction,
-    customError: typeof NotFoundException = NotFoundException,
-  ): Promise<TModel> {
-    const entity = await this.model.findByPk(primaryKey, {
-      include: this.includeAllByDefault ? { all: true } : undefined,
-      transaction,
-      paranoid: true,
-    });
-
-    if (!entity) {
-      throw new customError(
-        `Entity of type ${this.model.name} not found by primary key: ${primaryKey}`,
-      );
+    options?: Omit<FindOptions<Attributes<TModel>>, 'where'>,
+  ): Promise<TModel | null> {
+    try {
+      return await this.model.findByPk(primaryKey, options);
+    } catch (error) {
+      this.logger.error(`findByPk: ${error}`);
+      throw new InternalServerErrorException();
     }
-
-    return entity;
   }
 
   public async findOne(
-    options: WhereOptions<TModel>,
-    transaction?: Transaction,
-    customError: typeof NotFoundException = NotFoundException,
-  ): Promise<TModel> {
-    const entity = await this.model.findOne({
-      where: options,
-      include: this.includeAllByDefault ? { all: true } : undefined,
-      transaction,
-      paranoid: true,
-    });
-
-    if (!entity) {
-      throw new customError(
-        `Entity of type ${this.model.name} not found by options: ${Object.keys(options).join(', ')}`,
-      );
+    query: WhereOptions<Attributes<TModel>>,
+    options?: Omit<FindOptions<Attributes<TModel>>, 'where'>,
+  ): Promise<TModel | null> {
+    try {
+      return await this.model.findOne({
+        where: query,
+        ...options,
+      });
+    } catch (error) {
+      this.logger.error(`findOne: ${error}`);
+      throw new InternalServerErrorException();
     }
-
-    return entity;
   }
 
   public async findAll(
-    options: WhereOptions<TModel>,
-    transaction?: Transaction,
-    customError: typeof NotFoundException = NotFoundException,
+    query?: WhereOptions<Attributes<TModel>>,
+    options?: Omit<FindOptions<Attributes<TModel>>, 'where'>,
   ): Promise<TModel[]> {
-    const entities = await this.model.findAll({
-      where: options,
-      include: this.includeAllByDefault ? { all: true } : undefined,
-      transaction,
-      paranoid: true,
-    });
-
-    if (!entities.length) {
-      throw new customError(`No entities of type ${this.model.name} found`);
+    try {
+      return await this.model.findAll({
+        where: query,
+        ...options,
+      });
+    } catch (error) {
+      this.logger.error(`findAll: ${error}`);
+      throw new InternalServerErrorException();
     }
-
-    return entities;
   }
 
-  public async findAllPaginated(
-    limit: number,
-    offset: number,
-    options?: WhereOptions<TModel>,
-    transaction?: Transaction,
-  ): Promise<{ rows: TModel[]; count: number }> {
-    return this.model.findAndCountAll({
-      where: options,
-      limit,
-      offset,
-      include: this.includeAllByDefault ? { all: true } : undefined,
-      transaction,
-      paranoid: true,
-    });
-  }
-
-  public async update(
+  public async updateByPk(
     primaryKey: string | number,
-    options?: Partial<TDto>,
-    transaction?: Transaction,
-  ): Promise<TModel> {
-    const entity = await this.findByPk(primaryKey, transaction);
-    return entity.set(options as any).save({ transaction });
+    dto: Partial<Attributes<TModel>>,
+    options?: SaveOptions<Attributes<TModel>>,
+  ): Promise<TModel | null> {
+    try {
+      const entity = await this.findByPk(primaryKey, options);
+
+      if (!entity) {
+        return null;
+      }
+
+      entity.set(dto);
+      return await entity.save(options);
+    } catch (error) {
+      this.logger.error(`updatedByPk: ${error}`);
+      throw new InternalServerErrorException();
+    }
   }
 
-  public async delete(
+  public async deleteByPk(
     primaryKey: string | number,
-    force?: boolean,
-    transaction?: Transaction,
-  ): Promise<void> {
-    const entity = await this.findByPk(primaryKey, transaction);
-    return void (await entity.destroy({ force, transaction }));
+    options?: InstanceDestroyOptions,
+  ): Promise<TModel | null> {
+    try {
+      const entity = await this.findByPk(primaryKey, options);
+
+      if (!entity) {
+        return null;
+      }
+
+      await entity.destroy(options);
+      entity.set({ deletedAt: new Date() });
+
+      return entity;
+    } catch (error) {
+      this.logger.error(`deleteByPk: ${error}`);
+      throw new InternalServerErrorException();
+    }
+  }
+
+  public async restoreByPk(
+    primaryKey: string | number,
+    options?: InstanceRestoreOptions,
+  ): Promise<TModel | null> {
+    try {
+      const entity = await this.findByPk(primaryKey, {
+        ...options,
+        paranoid: false,
+      });
+
+      if (!entity) {
+        return null;
+      }
+
+      await entity.restore(options);
+      entity.set({ deletedAt: null });
+
+      return entity;
+    } catch (error) {
+      this.logger.error(`restoreByPk: ${error}`);
+      throw new InternalServerErrorException();
+    }
   }
 
   public async transaction<R>(
@@ -171,9 +185,9 @@ export class AbstractRepository<
     return await this.model.sequelize!.transaction(async (transaction) => {
       try {
         return await runInTransaction(transaction);
-      } catch (e) {
-        this.logger.error('Transaction failed', e);
-        throw e;
+      } catch (error) {
+        this.logger.error(`transaction: ${error}`);
+        throw new InternalServerErrorException();
       }
     });
   }

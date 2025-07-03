@@ -32,16 +32,14 @@ This package provides a reusable and extensible base repository class that works
 
 ## 🔧 Features
 
-| Feature               | Description                                                             |
-|-----------------------|-------------------------------------------------------------------------|
-| ✅ Abstract class      | Extend `AbstractRepository` for each model                              |
-| ✅ Generic typing      | Supports custom DTOs or defaults to Sequelize `CreationAttributes`      |
-| ✅ Custom errors       | Pass custom exceptions like `ForbiddenException` or `NotFoundException` |
-| ✅ Soft delete         | Supports `paranoid` models with `force` option                          |
-| ✅ Pagination          | `findAllPaginated(limit, offset, where)`                                |
-| ✅ Transaction utility | `repository.transaction()` for scoped logic                             |
-| ✅ Logger injection    | Optional NestJS logger for better traceability                          |
-| ✅ Flexible options    | Configure `includeAllByDefault`, `autoGenerateId`, etc.                 |
+| Feature               | Description                                                        |
+|-----------------------|--------------------------------------------------------------------|
+| ✅ Abstract class      | Extend `AbstractRepository` for each model                         |
+| ✅ Generic typing      | Supports custom DTOs or defaults to Sequelize `CreationAttributes` |
+| ✅ Soft delete         | Supports `paranoid` models with `force` option                     |
+| ✅ Transaction utility | `repository.transaction()` for scoped logic                        |
+| ✅ Logger injection    | Optional NestJS logger for better traceability                     |
+| ✅ Flexible options    | Configure `logger`, `autoGenerateId`, etc.                         |
 
 ---
 
@@ -66,28 +64,17 @@ export class User extends Model<User> {
 
 ---
 
-### 2. Create a DTO (optional)
-
-```ts
-export class CreateUserDto {
-  name: string;
-  email: string;
-}
-```
-
----
-
-### 3. Create repository
+### 2. Create repository
 
 ```ts
 import { AbstractRepository } from 'nest-sequelize-repository';
 
 @Injectable()
-export class UserRepository extends AbstractRepository<User, CreateUserDto> {
+export class UserRepository extends AbstractRepository<User> {
   constructor(@InjectModel(User) userModel: typeof User) {
     super(userModel, {
-      autoGenerateId: { enable: true, field: 'user_id' },
-      includeAllByDefault: true,
+      autoGenerateId: true,
+      idField: 'user_id',      
     });
   }
 }
@@ -95,7 +82,7 @@ export class UserRepository extends AbstractRepository<User, CreateUserDto> {
 
 ---
 
-### 4. Use in your service
+### 3. Use in your service
 
 ```ts
 @Injectable()
@@ -110,8 +97,8 @@ export class UserService {
     return this.users.findAll();
   }
 
-  async updateUser(id: string, update: Partial<CreateUserDto>) {
-    return this.users.update(id, update);
+  async updateUser(id: string, update: YourUpdateType) {
+    return this.users.updateByPK(id, update);
   }
 }
 ```
@@ -124,57 +111,19 @@ You can pass options when instantiating:
 
 ```ts
 {
-  autoGenerateId: { enable: true, field: 'user_id' }, // default field is 'id'
-  includeAllByDefault: true,
-  logger: new Logger('MyRepo'),
+  autoGenerateId: true, 
+  idField: 'user_id', // default field is 'id'  
+  logger: new MyCustomLogger('MyRepo'),
 }
 ```
 
 ---
 
-## 📄 API Overview
-
-### `create(dto, transaction?, customError?)`
-Creates an entity. If `autoGenerateId` is enabled, generates UUID.
-
----
-
-### `findByPk(id, transaction?, customError?)`
-Finds entity by primary key.
-
----
-
-### `findOne(where, transaction?, customError?)`
-Finds entity by query.
-
----
-
-### `findAll(where?, transaction?, customError?)`
-Returns list of entities.
-
----
-
-### `findAllPaginated(limit, offset, where?, transaction?)`
-Returns paginated list and count.
-
----
-
-### `update(id, partialDto, transaction?)`
-Updates entity by primary key.
-
----
-
-### `delete(id, force?, transaction?)`
-Deletes entity by primary key. If `paranoid: true`, uses soft delete unless `force` is `true`.
-
----
-
-### `transaction(fn)`
-Wraps any logic inside a transaction.
+## Transaction usage
 
 ```ts
-await repo.transaction(async (tx) => {
-  await repo.create(data, tx);
+await repo.transaction(async (transaction) => {
+  await repo.create(data, { transaction });
 });
 ```
 

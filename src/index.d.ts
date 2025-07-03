@@ -6,61 +6,44 @@ import { Model, ModelCtor } from 'sequelize-typescript';
  * Configuration options for the abstract repository.
  */
 export interface IRepositoryOptions {
-  autoGenerateId?: {
-    enable: boolean;
-    field?: string; // Defaults to 'id' if not specified
-  };
-  includeAllByDefault?: boolean;
+  autoGenerateId?: boolean;
+  idField?: string;
   logger?: Logger;
 }
 
 /**
  * Generic repository interface exposing basic CRUD and transaction methods.
  */
-export interface IRepository<TModel extends Model, TDto> {
+export interface IRepository<TModel extends Model> {
   create(
-    dto: TDto,
-    transaction?: Transaction,
-    customError?: typeof ForbiddenException,
+    dto: CreationAttributes<TModel>,
+    options: CreateOptions<TModel>,
   ): Promise<TModel>;
-
   findByPk(
     primaryKey: string | number,
-    transaction?: Transaction,
-    customError?: typeof NotFoundException,
-  ): Promise<TModel>;
-
+    options: Omit<FindOptions<Attributes<TModel>>, 'where'>,
+  ): Promise<TModel | null>;
   findOne(
-    options: WhereOptions<TModel>,
-    transaction?: Transaction,
-    customError?: typeof NotFoundException,
-  ): Promise<TModel>;
-
+    query: WhereOptions<Attributes<TModel>>,
+    options: Omit<FindOptions<Attributes<TModel>>, 'where'>,
+  ): Promise<TModel | null>;
   findAll(
-    options?: WhereOptions<TModel>,
-    transaction?: Transaction,
-    customError?: typeof NotFoundException,
+    query: WhereOptions<Attributes<TModel>>,
+    options: Omit<FindOptions<Attributes<TModel>>, 'where'>,
   ): Promise<TModel[]>;
-
-  findAllPaginated(
-    limit: number,
-    offset: number,
-    options?: WhereOptions<TModel>,
-    transaction?: Transaction,
-  ): Promise<{ rows: TModel[]; count: number }>;
-
-  update(
+  updateByPk(
     primaryKey: string | number,
-    options?: Partial<TDto>,
-    transaction?: Transaction,
-  ): Promise<TModel>;
-
-  delete(
+    dto: Partial<Attributes<TModel>>,
+    options?: SaveOptions<Attributes<TModel>>,
+  ): Promise<TModel | null>;
+  deleteByPk(
     primaryKey: string | number,
-    force?: boolean,
-    transaction?: Transaction,
-  ): Promise<void>;
-
+    options?: InstanceDestroyOptions,
+  ): Promise<TModel | null>;
+  restoreByPk(
+    primaryKey: string | number,
+    options?: InstanceRestoreOptions,
+  ): Promise<TModel | null>;
   transaction<R>(
     runInTransaction: (transaction: Transaction) => Promise<R>,
   ): Promise<R>;
@@ -69,56 +52,40 @@ export interface IRepository<TModel extends Model, TDto> {
 /**
  * Base abstract class that can be extended to create model-specific repositories.
  */
-export declare class AbstractRepository<
-  TModel extends Model,
-  TDto = CreationAttributes<TModel>,
-> implements IRepository<TModel, TDto>
+export declare class AbstractRepository<TModel extends Model>
+  implements IRepository<TModel>
 {
   constructor(model: ModelCtor<TModel>, options?: IRepositoryOptions);
 
   create(
-    dto: TDto,
-    transaction?: Transaction,
-    customError?: typeof ForbiddenException,
+    dto: CreationAttributes<TModel>,
+    options: CreateOptions<TModel>,
   ): Promise<TModel>;
-
   findByPk(
     primaryKey: string | number,
-    transaction?: Transaction,
-    customError?: typeof NotFoundException,
-  ): Promise<TModel>;
-
+    options: Omit<FindOptions<Attributes<TModel>>, 'where'>,
+  ): Promise<TModel | null>;
   findOne(
-    options: WhereOptions<TModel>,
-    transaction?: Transaction,
-    customError?: typeof NotFoundException,
-  ): Promise<TModel>;
-
+    query: WhereOptions<Attributes<TModel>>,
+    options: Omit<FindOptions<Attributes<TModel>>, 'where'>,
+  ): Promise<TModel | null>;
   findAll(
-    options?: WhereOptions<TModel>,
-    transaction?: Transaction,
-    customError?: typeof NotFoundException,
+    query: WhereOptions<Attributes<TModel>>,
+    options: Omit<FindOptions<Attributes<TModel>>, 'where'>,
   ): Promise<TModel[]>;
-
-  findAllPaginated(
-    limit: number,
-    offset: number,
-    options?: WhereOptions<TModel>,
-    transaction?: Transaction,
-  ): Promise<{ rows: TModel[]; count: number }>;
-
-  update(
+  updateByPk(
     primaryKey: string | number,
-    options?: Partial<TDto>,
-    transaction?: Transaction,
-  ): Promise<TModel>;
-
-  delete(
+    dto: Partial<Attributes<TModel>>,
+    options?: SaveOptions<Attributes<TModel>>,
+  ): Promise<TModel | null>;
+  deleteByPk(
     primaryKey: string | number,
-    force?: boolean,
-    transaction?: Transaction,
-  ): Promise<void>;
-
+    options?: InstanceDestroyOptions,
+  ): Promise<TModel | null>;
+  restoreByPk(
+    primaryKey: string | number,
+    options?: InstanceRestoreOptions,
+  ): Promise<TModel | null>;
   transaction<R>(
     runInTransaction: (transaction: Transaction) => Promise<R>,
   ): Promise<R>;

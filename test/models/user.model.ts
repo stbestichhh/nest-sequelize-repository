@@ -13,7 +13,7 @@ interface UserCreationAttributes {
   unique_field?: string;
 }
 
-@Table
+@Table({ paranoid: true })
 export class User extends Model<User, UserCreationAttributes> {
   @PrimaryKey
   @Column
