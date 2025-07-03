@@ -1,7 +1,7 @@
 import { Logger } from '@nestjs/common';
 
 export interface IRepositoryOptions {
-  autoGenerateId?: { enable: boolean; field?: string };
-  includeAllByDefault?: boolean;
+  autoGenerateId?: boolean;
+  idField?: string;
   logger?: Logger;
 }
