@@ -60,6 +60,10 @@ describe('UserRepository', () => {
       email: 'bob@example.com',
     });
     const found = await userRepo.findByPk(created.id);
+
+    console.log(typeof found?.get().toJSON);
+    console.log(typeof found?.get({ plain: true }).toJSON);
+
     expect(found).not.toBeNull();
     expect(found!.name).toBe('Bob');
   });

@@ -69,19 +69,19 @@ export declare class AbstractRepository<TModel extends Model>
 
   create(
     dto: CreationAttributes<TModel>,
-    options: CreateOptions<TModel>,
+    options?: CreateOptions<TModel>,
   ): Promise<TModel>;
   findByPk(
     primaryKey: string | number,
-    options: Omit<FindOptions<Attributes<TModel>>, 'where'>,
+    options?: Omit<FindOptions<Attributes<TModel>>, 'where'>,
   ): Promise<TModel | null>;
   findOne(
     query: WhereOptions<Attributes<TModel>>,
-    options: Omit<FindOptions<Attributes<TModel>>, 'where'>,
+    options?: Omit<FindOptions<Attributes<TModel>>, 'where'>,
   ): Promise<TModel | null>;
   findAll(
     query: WhereOptions<Attributes<TModel>>,
-    options: Omit<FindOptions<Attributes<TModel>>, 'where'>,
+    options?: Omit<FindOptions<Attributes<TModel>>, 'where'>,
   ): Promise<TModel[]>;
   updateByPk(
     primaryKey: string | number,
