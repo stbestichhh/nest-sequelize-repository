@@ -5,6 +5,8 @@ import {
   PrimaryKey,
   Unique,
   AllowNull,
+  Default,
+  DataType,
 } from 'sequelize-typescript';
 
 interface UserCreationAttributes {
@@ -17,16 +19,17 @@ interface UserCreationAttributes {
 export class User extends Model<User, UserCreationAttributes> {
   @PrimaryKey
   @Column
-  id!: string;
+  declare id: string;
 
   @Column
-  name!: string;
+  declare name: string;
 
   @Column
-  email!: string;
+  declare email: string;
 
   @Unique
   @AllowNull
-  @Column
-  unique_field!: string;
+  @Default(null)
+  @Column({ type: DataType.STRING })
+  declare unique_field: string | null;
 }

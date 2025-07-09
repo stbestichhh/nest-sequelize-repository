@@ -124,6 +124,7 @@ You can pass options when instantiating:
 ```ts
 await repo.transaction(async (transaction) => {
   await repo.create(data, { transaction });
+  await transaction.commit();
 });
 ```
 
@@ -131,7 +132,7 @@ await repo.transaction(async (transaction) => {
 
 ## 🏗️ Advanced Use
 
-- Override methods like `create()` or `update()` to apply custom hooks or validation.
+- Override methods like `create()` or `updateByPk()` to apply custom hooks or validation.
 - Extend with filters, scopes, or relations as needed.
 
 ---

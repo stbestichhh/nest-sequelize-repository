@@ -2,6 +2,7 @@ import { Sequelize } from 'sequelize-typescript';
 import { User } from './models/user.model';
 import { UserRepository } from './user.repository';
 import { AbstractRepository } from '../src/abstract.repository';
+import { Op } from 'sequelize';
 
 let sequelize: Sequelize;
 let userRepo: UserRepository;
@@ -61,11 +62,32 @@ describe('UserRepository', () => {
     });
     const found = await userRepo.findByPk(created.id);
 
-    console.log(typeof found?.get().toJSON);
-    console.log(typeof found?.get({ plain: true }).toJSON);
-
     expect(found).not.toBeNull();
     expect(found!.name).toBe('Bob');
+  });
+
+  it('should find a first user in table without query param', async () => {
+    const found = await userRepo.findOne();
+
+    expect(found).not.toBeNull();
+    expect(found).toBeDefined();
+  });
+
+  it('should find all users without query param', async () => {
+    const found = await userRepo.findAll();
+
+    expect(found.length).toBeGreaterThan(0);
+  });
+
+  it('should find all users with uniqe field', async () => {
+    const found = await userRepo.findAll({
+      unique_field: { [Op.ne]: null },
+    });
+
+    expect(found.length).toBeGreaterThan(0);
+    expect(found[0]).not.toBeNull();
+    expect(found[0]).toBeDefined();
+    expect(found[0].name).toBe('Alice');
   });
 
   it('should update a user', async () => {

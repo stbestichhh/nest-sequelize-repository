@@ -29,7 +29,7 @@ export class AbstractRepository<TModel extends Model>
 
   constructor(
     protected readonly model: ModelCtor<TModel>,
-    options: IRepositoryOptions = {},
+    options: IRepositoryOptions<TModel> = {},
   ) {
     const {
       autoGenerateId = false,
@@ -85,7 +85,7 @@ export class AbstractRepository<TModel extends Model>
   }
 
   public async findOne(
-    query: WhereOptions<Attributes<TModel>>,
+    query?: WhereOptions<Attributes<TModel>>,
     options?: Omit<FindOptions<Attributes<TModel>>, 'where'>,
   ): Promise<TModel | null> {
     try {
