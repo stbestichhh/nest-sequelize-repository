@@ -17,16 +17,16 @@ interface UserCreationAttributes {
 export class User extends Model<User, UserCreationAttributes> {
   @PrimaryKey
   @Column
-  id!: string;
+  declare id: string;
 
   @Column
-  name!: string;
+  declare name: string;
 
   @Column
-  email!: string;
+  declare email: string;
 
   @Unique
   @AllowNull
   @Column
-  unique_field!: string;
+  declare unique_field: string;
 }
