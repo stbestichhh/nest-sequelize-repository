@@ -4,5 +4,6 @@ import { Attributes, Model } from 'sequelize';
 export interface IRepositoryOptions<T extends Model> {
   autoGenerateId?: boolean;
   idField?: Extract<keyof Attributes<T>, string>;
+  idGenerator?: () => string;
   logger?: Logger;
 }

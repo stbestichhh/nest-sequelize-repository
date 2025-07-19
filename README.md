@@ -111,9 +111,10 @@ You can pass options when instantiating:
 
 ```ts
 {
-  autoGenerateId: true, 
-  idField: 'user_id', // default field is 'id'  
-  logger: new MyCustomLogger('MyRepo'),
+  autoGenerateId: true,                 // optional
+  idField: 'user_id',                   // optional, default field is 'id'  
+  idGenerator: myGenerateIdFunc;        // optional, default is v7 from 'uuid' package
+  logger: new MyCustomLogger('MyRepo'), // optional
 }
 ```
 

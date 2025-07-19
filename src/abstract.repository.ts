@@ -26,6 +26,7 @@ export class AbstractRepository<TModel extends Model>
   protected readonly logger: Logger;
   protected readonly autoGenerateId: boolean;
   protected readonly idField: string;
+  protected readonly idGenerator: () => string;
 
   constructor(
     protected readonly model: ModelCtor<TModel>,
@@ -35,6 +36,7 @@ export class AbstractRepository<TModel extends Model>
       autoGenerateId = false,
       idField = 'id',
       logger = new Logger(this.constructor.name),
+      idGenerator = uuidv7,
     } = options;
 
     if (new.target === AbstractRepository) {
@@ -44,6 +46,7 @@ export class AbstractRepository<TModel extends Model>
     this.logger = logger;
     this.autoGenerateId = autoGenerateId;
     this.idField = idField;
+    this.idGenerator = idGenerator;
   }
 
   public async create(
@@ -51,7 +54,9 @@ export class AbstractRepository<TModel extends Model>
     options?: CreateOptions<Attributes<TModel>>,
   ): Promise<TModel> {
     try {
-      const id = this.autoGenerateId ? { [this.idField]: uuidv7() } : {};
+      const id = this.autoGenerateId
+        ? { [this.idField]: this.idGenerator() }
+        : {};
 
       return await this.model.create(
         {
