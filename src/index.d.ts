@@ -33,6 +33,14 @@ export interface IRepositoryOptions<T extends Model> {
   idField?: Extract<keyof Attributes<T>, string>;
 
   /**
+   * Function responsible for generating unique IDs when `autoGenerateId` is true.
+   *
+   * @default v7 from 'uuid'
+   * @returns string
+   */
+  idGenerator?: () => string;
+
+  /**
    * Optional NestJS logger instance used for internal logging
    */
   logger?: Logger;
@@ -151,6 +159,26 @@ export interface IRepository<TModel extends Model> {
 export declare class AbstractRepository<TModel extends Model>
   implements IRepository<TModel>
 {
+  /**
+   * Logger instance used for logging errors.
+   */
+  protected readonly logger: Logger;
+
+  /**
+   * Flag indicating whether to auto-generate the ID field on creation.
+   */
+  protected readonly autoGenerateId: boolean;
+
+  /**
+   * The name of the field used as the model's unique identifier.
+   */
+  protected readonly idField: string;
+
+  /**
+   * Function responsible for generating unique IDs when `autoGenerateId` is true.
+   */
+  protected readonly idGenerator: () => string;
+
   /**
    * Constructs the abstract repository.
    *
