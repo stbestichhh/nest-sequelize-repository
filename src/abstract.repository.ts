@@ -154,9 +154,7 @@ export class AbstractRepository<TModel extends Model>
 
       await entity.destroy(options);
 
-      if (!options?.force) {
-        entity.set({ deletedAt: new Date() });
-      }
+      // Soft delete is handled automatically by Sequelize's destroy() method.
 
       return entity;
     } catch (error) {
