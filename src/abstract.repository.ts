@@ -125,7 +125,7 @@ export class AbstractRepository<TModel extends Model>
     options?: SaveOptions<Attributes<TModel>>,
   ): Promise<TModel | null> {
     try {
-      const entity = await this.findByPk(primaryKey, options);
+      const entity = await this.findByPk(primaryKey);
 
       if (!entity) {
         return null;
@@ -144,14 +144,19 @@ export class AbstractRepository<TModel extends Model>
     options?: InstanceDestroyOptions,
   ): Promise<TModel | null> {
     try {
-      const entity = await this.findByPk(primaryKey, options);
+      const entity = await this.findByPk(primaryKey, {
+        paranoid: !options?.force,
+      });
 
       if (!entity) {
         return null;
       }
 
       await entity.destroy(options);
-      entity.set({ deletedAt: new Date() });
+
+      if (!options?.force) {
+        entity.set({ deletedAt: new Date() });
+      }
 
       return entity;
     } catch (error) {
