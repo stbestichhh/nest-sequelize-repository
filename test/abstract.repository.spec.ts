@@ -122,6 +122,37 @@ describe('UserRepository', () => {
     expect(restoredUser!.deletedAt).toBeNull();
   });
 
+  it('should not force delete a user', async () => {
+    const user = await userRepo.create({
+      name: 'Dave',
+      email: 'dave@example.com',
+    });
+
+    const deletedUser = await userRepo.deleteByPk(user.id);
+
+    expect(deletedUser).not.toBeNull();
+    expect(deletedUser?.deletedAt).not.toBeNull();
+  });
+
+  it('should force delete a user', async () => {
+    const user = await userRepo.create({
+      name: 'Dave',
+      email: 'dave@example.com',
+      ...{ deletedAt: new Date() },
+    });
+
+    const deletedUser = await userRepo.deleteByPk(user.id, {
+      force: true,
+    });
+
+    const deletedUserFound = await userRepo.findByPk(user.id, {
+      paranoid: false,
+    });
+
+    expect(deletedUser).not.toBeNull();
+    expect(deletedUserFound).toBeNull();
+  });
+
   it('should run operations inside a transaction', async () => {
     const result = await userRepo.transaction(async (tx) => {
       return await userRepo.create(
