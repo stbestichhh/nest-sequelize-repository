@@ -1,6 +1,6 @@
 {
   "name": "nest-sequelize-repository",
-  "version": "0.1.5",
+  "version": "0.1.6-pre",
   "description": "Abstract repository for Nest and Sequelize.js ORM",
   "keywords": [
     "sequelize.js",
@@ -20,22 +20,24 @@
   "license": "MIT",
   "author": "Kiril Yakymchuk <stbestich@gmail.com>",
   "type": "commonjs",
-  "main": "dist/index.js",
-  "types": "src/index.d.ts",
+  "main": "index.js",
+  "types": "index.d.ts",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "tsc",
     "fmt": "prettier --write .",
     "fmt:check": "prettier -c .",
     "test": "jest",
-    "prepare": "husky"
+    "prepare": "husky",
+    "prepublish": "pnpm build && cp dist/index.js ./ && cp src/index.d.ts ./",
+    "postpublish": "rimraf index.js && rimraf index.d.ts"
   },
   "files": [
-    "dist",
+    "index.js",
+    "index.d.ts",
     "LICENSE",
     "README.md",
-    "CHANGELOG.md",
-    "src/index.d.ts"
+    "CHANGELOG.md"
   ],
   "devDependencies": {
     "@nestjs/common": "^11.1.0",
