@@ -1,19 +1,15 @@
-import {
-  ForbiddenException,
-  InternalServerErrorException,
-  Logger,
-} from '@nestjs/common';
+import { InternalServerErrorException, Logger } from '@nestjs/common';
 import {
   Transaction,
   WhereOptions,
   CreationAttributes,
-  UniqueConstraintError,
   CreateOptions,
   FindOptions,
   Attributes,
   SaveOptions,
   InstanceDestroyOptions,
   InstanceRestoreOptions,
+  BulkCreateOptions,
 } from 'sequelize';
 import { IRepository } from './IRepository';
 import { Model, ModelCtor } from 'sequelize-typescript';
@@ -66,13 +62,26 @@ export class AbstractRepository<TModel extends Model>
         options,
       );
     } catch (error) {
-      this.logger.error(`create: ${error}`);
+      this.logger.error(`insert: ${error}`);
+      throw new InternalServerErrorException();
+    }
+  }
 
-      if (error instanceof UniqueConstraintError) {
-        throw new ForbiddenException(
-          `Entity ${this.model.name} already exists`,
-        );
-      }
+  public async insert(
+    dto: CreationAttributes<TModel>,
+    options?: CreateOptions<Attributes<TModel>>,
+  ): Promise<TModel> {
+    return this.create(dto, options);
+  }
+
+  public async insertMany(
+    dtos: CreationAttributes<TModel>[],
+    options?: BulkCreateOptions<Attributes<TModel>>,
+  ): Promise<TModel[]> {
+    try {
+      return await this.model.bulkCreate(dtos, options);
+    } catch (error) {
+      this.logger.error(`insertMany: ${error}`);
       throw new InternalServerErrorException();
     }
   }
@@ -154,8 +163,6 @@ export class AbstractRepository<TModel extends Model>
 
       await entity.destroy(options);
 
-      // Soft delete is handled automatically by Sequelize's destroy() method.
-
       return entity;
     } catch (error) {
       this.logger.error(`deleteByPk: ${error}`);
@@ -178,7 +185,6 @@ export class AbstractRepository<TModel extends Model>
       }
 
       await entity.restore(options);
-      entity.set({ deletedAt: null });
 
       return entity;
     } catch (error) {
@@ -190,13 +196,13 @@ export class AbstractRepository<TModel extends Model>
   public async transaction<R>(
     runInTransaction: (transaction: Transaction) => Promise<R>,
   ): Promise<R> {
-    return await this.model.sequelize!.transaction(async (transaction) => {
-      try {
+    try {
+      return await this.model.sequelize!.transaction(async (transaction) => {
         return await runInTransaction(transaction);
-      } catch (error) {
-        this.logger.error(`transaction: ${error}`);
-        throw new InternalServerErrorException();
-      }
-    });
+      });
+    } catch (error) {
+      this.logger.error(`transaction: ${error}`);
+      throw new InternalServerErrorException();
+    }
   }
 }

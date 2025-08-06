@@ -1,5 +1,6 @@
 import {
   Attributes,
+  BulkCreateOptions,
   CreateOptions,
   CreationAttributes,
   FindOptions,
@@ -16,6 +17,14 @@ export interface IRepository<TModel extends Model> {
     dto: CreationAttributes<TModel>,
     options?: CreateOptions<TModel>,
   ): Promise<TModel>;
+  insert(
+    dto: CreationAttributes<TModel>,
+    options?: CreateOptions<TModel>,
+  ): Promise<TModel>;
+  insertMany(
+    dtos: CreationAttributes<TModel>[],
+    options?: BulkCreateOptions<Attributes<TModel>>,
+  ): Promise<TModel[]>;
   findByPk(
     primaryKey: string | number,
     options?: Omit<FindOptions<Attributes<TModel>>, 'where'>,

@@ -20,6 +20,8 @@ Supports:
 npm install nest-sequelize-repository
 # or
 yarn add nest-sequelize-repository
+# or
+pnpm add nest-sequelize-repository
 ```
 
 ---
@@ -124,7 +126,7 @@ You can pass options when instantiating:
 
 ```ts
 await repo.transaction(async (transaction) => {
-  await repo.create(data, { transaction });
+  await repo.insert(data, { transaction });
   await transaction.commit();
 });
 ```
