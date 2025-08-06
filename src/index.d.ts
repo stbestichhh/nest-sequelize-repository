@@ -9,6 +9,7 @@ import {
   InstanceRestoreOptions,
   SaveOptions,
   FindOptions,
+  BulkCreateOptions,
 } from 'sequelize';
 import { Model, ModelCtor } from 'sequelize-typescript';
 
@@ -64,6 +65,30 @@ export interface IRepository<TModel extends Model> {
     dto: CreationAttributes<TModel>,
     options?: CreateOptions<TModel>,
   ): Promise<TModel>;
+
+  /**
+   * Creates a new record in the database. Alias for `create`
+   *
+   * @param dto The data to create record with.
+   * @param options Optional Sequelize create options.
+   * @returns A promise resolving to the created model instance.
+   */
+  insert(
+    dto: CreationAttributes<TModel>,
+    options?: CreateOptions<TModel>,
+  ): Promise<TModel>;
+
+  /**
+   * Creates multiple new records in the database.
+   *
+   * @param dtos The array of data to create records with.
+   * @param options Optional Sequelize create options.
+   * @returns A promise resolving to the created models instances.
+   */
+  insertMany(
+    dtos: CreationAttributes<TModel>[],
+    options?: BulkCreateOptions<Attributes<TModel>>,
+  ): Promise<TModel[]>;
 
   /**
    * Finds a record by its primary key
@@ -194,6 +219,22 @@ export declare class AbstractRepository<TModel extends Model>
     dto: CreationAttributes<TModel>,
     options?: CreateOptions<TModel>,
   ): Promise<TModel>;
+
+  /**
+   * @inheritdoc
+   */
+  insert(
+    dto: CreationAttributes<TModel>,
+    options?: CreateOptions<TModel>,
+  ): Promise<TModel>;
+
+  /**
+   * @inheritdoc
+   */
+  insertMany(
+    dtos: CreationAttributes<TModel>[],
+    options?: BulkCreateOptions<Attributes<TModel>>,
+  ): Promise<TModel[]>;
 
   /**
    * @inheritdoc

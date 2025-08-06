@@ -3,6 +3,7 @@ import { User } from './models/user.model';
 import { UserRepository } from './user.repository';
 import { AbstractRepository } from '../src/abstract.repository';
 import { Op } from 'sequelize';
+import { InternalServerErrorException } from '@nestjs/common';
 
 let sequelize: Sequelize;
 let userRepo: UserRepository;
@@ -42,6 +43,35 @@ describe('UserRepository', () => {
     expect(user.name).toBe('Alice');
   });
 
+  it('should create a new user with alias', async () => {
+    const user = await userRepo.insert({
+      name: 'Alice',
+      email: 'alice2@example.com',
+    });
+    expect(user.id).toBeDefined();
+    expect(user.email).toBe('alice2@example.com');
+  });
+
+  it('should create multiple instances', async () => {
+    const users = await userRepo.insertMany([
+      {
+        email: '1@email.com',
+        name: '1',
+      },
+      {
+        email: '2@email.com',
+        name: '2',
+      },
+      {
+        email: '3@email.com',
+        name: '3',
+      },
+    ]);
+
+    expect(users).toHaveLength(3);
+    expect(users[1]).toHaveProperty('name', '2');
+  });
+
   it('should throw on create with identical unique fields', async () => {
     const dto = {
       name: 'Alice',
@@ -51,7 +81,7 @@ describe('UserRepository', () => {
     await userRepo.create(dto);
 
     await expect(userRepo.create(dto)).rejects.toThrow(
-      'Entity User already exists',
+      InternalServerErrorException,
     );
   });
 
