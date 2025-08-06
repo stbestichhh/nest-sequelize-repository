@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# Patch 0.1.7
+### Added:
+* `insertMany` method for creating multiple instances
+* `insert` alias for `create` method
+
 # Patch 0.1.6
 ### Change:
 * **Reduced package size in 11 times**
