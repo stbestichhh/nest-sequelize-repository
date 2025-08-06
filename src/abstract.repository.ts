@@ -196,13 +196,13 @@ export class AbstractRepository<TModel extends Model>
   public async transaction<R>(
     runInTransaction: (transaction: Transaction) => Promise<R>,
   ): Promise<R> {
-    try {
-      return await this.model.sequelize!.transaction(async (transaction) => {
+    return this.model.sequelize!.transaction(async (transaction) => {
+      try {
         return await runInTransaction(transaction);
-      });
-    } catch (error) {
-      this.logger.error(`transaction: ${error}`);
-      throw new InternalServerErrorException();
-    }
+      } catch (error) {
+        this.logger.error(`transaction: ${error}`);
+        throw new InternalServerErrorException();
+      }
+    });
   }
 }
