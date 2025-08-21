@@ -79,7 +79,16 @@ export class AbstractRepository<TModel extends Model>
     options?: BulkCreateOptions<Attributes<TModel>>,
   ): Promise<TModel[]> {
     try {
-      return await this.model.bulkCreate(dtos, options);
+      let identifiedDtos = dtos;
+
+      if (this.autoGenerateId) {
+        identifiedDtos = dtos.map((dto) => ({
+          ...dto,
+          [this.idField]: this.idGenerator(),
+        }));
+      }
+
+      return await this.model.bulkCreate(identifiedDtos, options);
     } catch (error) {
       this.logger.error(`insertMany: ${error}`);
       throw new InternalServerErrorException();
