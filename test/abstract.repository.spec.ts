@@ -70,6 +70,7 @@ describe('UserRepository', () => {
 
     expect(users).toHaveLength(3);
     expect(users[1]).toHaveProperty('name', '2');
+    expect(users[1].id).not.toBeNull();
   });
 
   it('should throw on create with identical unique fields', async () => {
