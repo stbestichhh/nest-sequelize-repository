@@ -218,6 +218,9 @@ export class AbstractRepository<TModel extends Model>
         return null;
       }
 
+      if (options?.force && entity.getDataValue('deletedAt') !== undefined) {
+        entity.setDataValue('deletedAt', new Date());
+      }
       await entity.destroy(options);
 
       return entity;

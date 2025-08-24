@@ -169,7 +169,6 @@ describe('UserRepository', () => {
     const user = await userRepo.create({
       name: 'Dave',
       email: 'dave@example.com',
-      ...{ deletedAt: new Date() },
     });
 
     const deletedUser = await userRepo.deleteByPk(user.id, {
@@ -181,6 +180,7 @@ describe('UserRepository', () => {
     });
 
     expect(deletedUser).not.toBeNull();
+    expect(deletedUser?.deletedAt).not.toBeNull();
     expect(deletedUserFound).toBeNull();
   });
 
