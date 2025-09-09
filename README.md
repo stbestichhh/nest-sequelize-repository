@@ -115,7 +115,7 @@ You can pass options when instantiating:
 {
   autoGenerateId: true,                 // optional
   idField: 'user_id',                   // optional, default field is 'id'  
-  idGenerator: myGenerateIdFunc;        // optional, default is v7 from 'uuid' package
+  idGenerator: myGenerateIdFunc,        // optional, default is UUIDv4
   logger: new MyCustomLogger('MyRepo'), // optional
 }
 ```

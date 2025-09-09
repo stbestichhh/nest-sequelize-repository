@@ -194,4 +194,12 @@ describe('UserRepository', () => {
 
     expect(result.id).toBeDefined();
   });
+
+  it('should find all with pagination', async () => {
+    const allRecords = await userRepo.findAll();
+    const paginated = await userRepo.findAllPaginated(allRecords.length);
+
+    expect(paginated.rows.length).toBe(allRecords.length);
+    expect(paginated.count).toBe(allRecords.length);
+  });
 });
