@@ -36,10 +36,11 @@ export interface IRepositoryOptions<T extends Model> {
   /**
    * Function responsible for generating unique IDs when `autoGenerateId` is true.
    *
-   * @default v7 from 'uuid'
+   * @default UUIDv4 from 'node:crypto' package
    * @returns string
+   * @returns number
    */
-  idGenerator?: () => string;
+  idGenerator?: () => string | number;
 
   /**
    * Optional NestJS logger instance used for internal logging
@@ -127,6 +128,25 @@ export interface IRepository<TModel extends Model> {
   ): Promise<TModel[]>;
 
   /**
+   * Find first amount of records set by limit and count all existing records
+   *
+   * @param limit Amout of records to find and return.
+   * @param offset Amout of records to skip.
+   * @param query A Sequelize where clause.
+   * @param options Optional Sequelize find options, excluding `where`.
+   * @returns A Promise resolving `rows`(found records) and `count`(amout of existing records).
+   */
+  findAllPaginated(
+    limit: number,
+    offset?: number,
+    query?: WhereOptions<Attributes<TModel>>,
+    options?: Omit<
+      FindAndCountOptions<Attributes<TModel>>,
+      'where' | 'offset' | 'limit'
+    >,
+  ): Promise<{ rows: TModel[]; count: number }>;
+
+  /**
    * Updates a records by its primary key.
    *
    * @param primaryKey The value of the primary key.
@@ -202,7 +222,7 @@ export declare class AbstractRepository<TModel extends Model>
   /**
    * Function responsible for generating unique IDs when `autoGenerateId` is true.
    */
-  protected readonly idGenerator: () => string;
+  protected readonly idGenerator: () => string | number;
 
   /**
    * Constructs the abstract repository.

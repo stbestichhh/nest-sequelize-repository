@@ -3,6 +3,7 @@ import {
   BulkCreateOptions,
   CreateOptions,
   CreationAttributes,
+  FindAndCountOptions,
   FindOptions,
   InstanceDestroyOptions,
   InstanceRestoreOptions,
@@ -37,6 +38,15 @@ export interface IRepository<TModel extends Model> {
     query?: WhereOptions<Attributes<TModel>>,
     options?: Omit<FindOptions<Attributes<TModel>>, 'where'>,
   ): Promise<TModel[]>;
+  findAllPaginated(
+    limit: number,
+    offset?: number,
+    query?: WhereOptions<Attributes<TModel>>,
+    options?: Omit<
+      FindAndCountOptions<Attributes<TModel>>,
+      'where' | 'offset' | 'limit'
+    >,
+  ): Promise<{ rows: TModel[]; count: number }>;
   updateByPk(
     primaryKey: string | number,
     dto: Partial<Attributes<TModel>>,

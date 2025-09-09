@@ -10,14 +10,15 @@ import {
   InstanceDestroyOptions,
   InstanceRestoreOptions,
   BulkCreateOptions,
+  FindAndCountOptions,
 } from 'sequelize';
 import { Model, ModelCtor } from 'sequelize-typescript';
-import { v7 as uuidv7 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 export interface IRepositoryOptions<T extends Model> {
   autoGenerateId?: boolean;
   idField?: Extract<keyof Attributes<T>, string>;
-  idGenerator?: () => string;
+  idGenerator?: () => string | number;
   logger?: Logger;
 }
 
@@ -46,6 +47,15 @@ export interface IRepository<TModel extends Model> {
     query?: WhereOptions<Attributes<TModel>>,
     options?: Omit<FindOptions<Attributes<TModel>>, 'where'>,
   ): Promise<TModel[]>;
+  findAllPaginated(
+    limit: number,
+    offset?: number,
+    query?: WhereOptions<Attributes<TModel>>,
+    options?: Omit<
+      FindAndCountOptions<Attributes<TModel>>,
+      'where' | 'offset' | 'limit'
+    >,
+  ): Promise<{ rows: TModel[]; count: number }>;
   updateByPk(
     primaryKey: string | number,
     dto: Partial<Attributes<TModel>>,
@@ -70,7 +80,7 @@ export class AbstractRepository<TModel extends Model>
   protected readonly logger: Logger;
   protected readonly autoGenerateId: boolean;
   protected readonly idField: string;
-  protected readonly idGenerator: () => string;
+  protected readonly idGenerator: () => string | number;
 
   constructor(
     protected readonly model: ModelCtor<TModel>,
@@ -80,7 +90,7 @@ export class AbstractRepository<TModel extends Model>
       autoGenerateId = false,
       idField = 'id',
       logger = new Logger(this.constructor.name),
-      idGenerator = uuidv7,
+      idGenerator = randomUUID,
     } = options;
 
     if (new.target === AbstractRepository) {
@@ -181,6 +191,28 @@ export class AbstractRepository<TModel extends Model>
       });
     } catch (error) {
       this.logger.error(`findAll: ${error}`);
+      throw new InternalServerErrorException();
+    }
+  }
+
+  public async findAllPaginated(
+    limit: number,
+    offset: number = 0,
+    query?: WhereOptions<Attributes<TModel>>,
+    options?: Omit<
+      FindAndCountOptions<Attributes<TModel>>,
+      'where' | 'offset' | 'limit'
+    >,
+  ): Promise<{ rows: TModel[]; count: number }> {
+    try {
+      return await this.model.findAndCountAll({
+        where: query,
+        limit,
+        offset,
+        ...options,
+      });
+    } catch (error) {
+      this.logger.error(`findAllPaginated: ${error}`);
       throw new InternalServerErrorException();
     }
   }

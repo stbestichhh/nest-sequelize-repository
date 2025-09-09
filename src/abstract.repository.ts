@@ -10,11 +10,12 @@ import {
   InstanceDestroyOptions,
   InstanceRestoreOptions,
   BulkCreateOptions,
+  FindAndCountOptions,
 } from 'sequelize';
 import { IRepository } from './IRepository';
 import { Model, ModelCtor } from 'sequelize-typescript';
 import { IRepositoryOptions } from './IRepositoryOptions';
-import { v7 as uuidv7 } from 'uuid';
+import { randomUUID } from 'crypto';
 
 export class AbstractRepository<TModel extends Model>
   implements IRepository<TModel>
@@ -22,7 +23,7 @@ export class AbstractRepository<TModel extends Model>
   protected readonly logger: Logger;
   protected readonly autoGenerateId: boolean;
   protected readonly idField: string;
-  protected readonly idGenerator: () => string;
+  protected readonly idGenerator: () => string | number;
 
   constructor(
     protected readonly model: ModelCtor<TModel>,
@@ -32,7 +33,7 @@ export class AbstractRepository<TModel extends Model>
       autoGenerateId = false,
       idField = 'id',
       logger = new Logger(this.constructor.name),
-      idGenerator = uuidv7,
+      idGenerator = randomUUID,
     } = options;
 
     if (new.target === AbstractRepository) {
@@ -133,6 +134,28 @@ export class AbstractRepository<TModel extends Model>
       });
     } catch (error) {
       this.logger.error(`findAll: ${error}`);
+      throw new InternalServerErrorException();
+    }
+  }
+
+  public async findAllPaginated(
+    limit: number,
+    offset: number = 0,
+    query?: WhereOptions<Attributes<TModel>>,
+    options?: Omit<
+      FindAndCountOptions<Attributes<TModel>>,
+      'where' | 'offset' | 'limit'
+    >,
+  ): Promise<{ rows: TModel[]; count: number }> {
+    try {
+      return await this.model.findAndCountAll({
+        where: query,
+        limit,
+        offset,
+        ...options,
+      });
+    } catch (error) {
+      this.logger.error(`findAllPaginated: ${error}`);
       throw new InternalServerErrorException();
     }
   }
