@@ -2,15 +2,20 @@
 
 Abstract repository pattern implementation for Sequelize ORM in NestJS projects.
 
+- [Quick start](#-quick-start)
+- [Purpose](#-purpose)
+- [Methods](#-irepository-methods)
+- [Configuration](#-irepositoryoptions)
+
 Supports:
 
-- ✅ Custom DTO typing or Sequelize creation attributes
-- ✅ Custom error handling
-- ✅ Soft delete support (`paranoid: true`)
-- ✅ Pagination
-- ✅ Optional UUID auto-generation
-- ✅ Injected logger
-- ✅ Simplified transaction handling
+* ✅ Custom DTO typing or Sequelize creation attributes
+* ✅ Custom error handling
+* ✅ Soft delete support (`paranoid: true`)
+* ✅ Pagination
+* ✅ Optional UUID auto-generation
+* ✅ Injected logger
+* ✅ Simplified transaction handling
 
 ---
 
@@ -45,6 +50,39 @@ This package provides a reusable and extensible base repository class that works
 
 ---
 
+## 🛠️ IRepositoryOptions
+
+Configuration options for the abstract repository:
+
+| Option           | Type                     | Default                 | Description                                           |
+|------------------|--------------------------|-------------------------|-------------------------------------------------------|
+| `autoGenerateId` | `boolean`                | `false`                 | Whether to auto-generate a UUIDv4 for the primary key |
+| `idField`        | `string`                 | `'id'`                  | Name of the primary key field                         |
+| `idGenerator`    | `() => string \| number` | `UUIDv4`                | Function for generating unique IDs                    |
+| `logger`         | `Logger`                 | `NestJS default Logger` | Optional NestJS logger instance for internal logging  |
+
+---
+
+## 🛠️ IRepository Methods
+
+All methods return Promises.
+
+| Method                                               | Parameters                                                                                                 | Description                                     |            |                                        |
+|------------------------------------------------------|------------------------------------------------------------------------------------------------------------|-------------------------------------------------|------------|----------------------------------------|
+| `create(dto, options?)`                              | `dto: CreationAttributes<TModel>`, `options?: CreateOptions<TModel>`                                       | Creates a new record                            |            |                                        |
+| `insert(dto, options?)`                              | Same as `create`                                                                                           | Alias for `create`                              |            |                                        |
+| `insertMany(dtos, options?)`                         | `dtos: CreationAttributes<TModel>[]`, `options?: BulkCreateOptions<Attributes<TModel>>`                    | Creates multiple records                        |            |                                        |
+| `findByPk(primaryKey, options?)`                     | `primaryKey: string \| number`, `options?: Omit<FindOptions, 'where'>`                                     | Find record by primary key                      |            |                                        |
+| `findOne(query?, options?)`                          | `query?: WhereOptions`, `options?: Omit<FindOptions, 'where'>`                                             | Find single record by query                     |            |                                        |
+| `findAll(query?, options?)`                          | `query?: WhereOptions`, `options?: Omit<FindOptions, 'where'>`                                             | Find all matching records                       |            |                                        |
+| `findAllPaginated(limit, offset?, query?, options?)` | `limit: number`, `offset?: number`, `query?: WhereOptions`, \`options?: Omit\<FindAndCountOptions, 'where' | 'offset'                                        | 'limit'>\` | Find paginated records and total count |
+| `updateByPk(primaryKey, dto, options?)`              | `primaryKey: string \| number`, `dto: Partial<Attributes<TModel>>`, `options?: SaveOptions`                | Update record by primary key                    |            |                                        |
+| `deleteByPk(primaryKey, options?)`                   | `primaryKey: string \| number`, `options?: InstanceDestroyOptions`                                         | Delete (soft/hard) record by primary key        |            |                                        |
+| `restoreByPk(primaryKey, options?)`                  | `primaryKey: string \| number`, `options?: InstanceRestoreOptions`                                         | Restore previously soft-deleted record          |            |                                        |
+| `transaction(runInTransaction)`                      | `(transaction: Transaction) => Promise<R>`                                                                 | Execute callback within a Sequelize transaction |            |                                        |
+
+---
+
 ## 🚀 Quick Start
 
 ### 1. Define a model
@@ -76,7 +114,7 @@ export class UserRepository extends AbstractRepository<User> {
   constructor(@InjectModel(User) userModel: typeof User) {
     super(userModel, {
       autoGenerateId: true,
-      idField: 'user_id',      
+      idField: 'user_id',
     });
   }
 }
@@ -100,7 +138,7 @@ export class UserService {
   }
 
   async updateUser(id: string, update: YourUpdateType) {
-    return this.users.updateByPK(id, update);
+    return this.users.updateByPk(id, update);
   }
 }
 ```
@@ -122,7 +160,7 @@ You can pass options when instantiating:
 
 ---
 
-## Transaction usage
+## 💡 Transaction usage
 
 ```ts
 await repo.transaction(async (transaction) => {
@@ -135,8 +173,8 @@ await repo.transaction(async (transaction) => {
 
 ## 🏗️ Advanced Use
 
-- Override methods like `create()` or `updateByPk()` to apply custom hooks or validation.
-- Extend with filters, scopes, or relations as needed.
+* Override methods like `create()` or `updateByPk()` to apply custom hooks or validation.
+* Extend with filters, scopes, or relations as needed.
 
 ---
 
