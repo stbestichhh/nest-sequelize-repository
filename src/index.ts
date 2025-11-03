@@ -1,4 +1,4 @@
-import { InternalServerErrorException, Logger } from '@nestjs/common';
+import { InternalServerErrorException, Logger } from '@nestjs/common'
 import {
   Transaction,
   WhereOptions,
@@ -11,96 +11,85 @@ import {
   InstanceRestoreOptions,
   BulkCreateOptions,
   FindAndCountOptions,
-} from 'sequelize';
-import { Model, ModelCtor } from 'sequelize-typescript';
-import { randomUUID } from 'crypto';
+} from 'sequelize'
+import { Model, ModelCtor } from 'sequelize-typescript'
 
-export interface IRepositoryOptions<T extends Model> {
-  autoGenerateId?: boolean;
-  idField?: Extract<keyof Attributes<T>, string>;
-  idGenerator?: () => string | number;
-  logger?: Logger;
+export interface PaginationOptions<TModel extends Model> {
+  limit?: number
+  offset?: number
+  query?: WhereOptions<Attributes<TModel>>
+  findOptions?: Omit<
+    FindAndCountOptions<Attributes<TModel>>,
+    'where' | 'offset' | 'limit'
+  >
+}
+
+export interface IRepositoryOptions {
+  logger?: Logger
 }
 
 export interface IRepository<TModel extends Model> {
   create(
     dto: CreationAttributes<TModel>,
     options?: CreateOptions<TModel>,
-  ): Promise<TModel>;
+  ): Promise<TModel>
   insert(
     dto: CreationAttributes<TModel>,
     options?: CreateOptions<TModel>,
-  ): Promise<TModel>;
+  ): Promise<TModel>
   insertMany(
     dtos: CreationAttributes<TModel>[],
     options?: BulkCreateOptions<Attributes<TModel>>,
-  ): Promise<TModel[]>;
+  ): Promise<TModel[]>
   findByPk(
     primaryKey: string | number,
     options?: Omit<FindOptions<Attributes<TModel>>, 'where'>,
-  ): Promise<TModel | null>;
+  ): Promise<TModel | null>
   findOne(
     query?: WhereOptions<Attributes<TModel>>,
     options?: Omit<FindOptions<Attributes<TModel>>, 'where'>,
-  ): Promise<TModel | null>;
+  ): Promise<TModel | null>
   findAll(
     query?: WhereOptions<Attributes<TModel>>,
     options?: Omit<FindOptions<Attributes<TModel>>, 'where'>,
-  ): Promise<TModel[]>;
+  ): Promise<TModel[]>
   findAllPaginated(
-    limit: number,
-    offset?: number,
-    query?: WhereOptions<Attributes<TModel>>,
-    options?: Omit<
-      FindAndCountOptions<Attributes<TModel>>,
-      'where' | 'offset' | 'limit'
-    >,
-  ): Promise<{ rows: TModel[]; count: number }>;
+    options: PaginationOptions<TModel>,
+  ): Promise<{ rows: TModel[]; count: number }>
   updateByPk(
     primaryKey: string | number,
     dto: Partial<Attributes<TModel>>,
     options?: SaveOptions<Attributes<TModel>>,
-  ): Promise<TModel | null>;
+  ): Promise<TModel | null>
   deleteByPk(
     primaryKey: string | number,
     options?: InstanceDestroyOptions,
-  ): Promise<TModel | null>;
+  ): Promise<TModel | null>
   restoreByPk(
     primaryKey: string | number,
     options?: InstanceRestoreOptions,
-  ): Promise<TModel | null>;
+  ): Promise<TModel | null>
   transaction<R>(
     runInTransaction: (transaction: Transaction) => Promise<R>,
-  ): Promise<R>;
+  ): Promise<R>
 }
 
 export class AbstractRepository<TModel extends Model>
   implements IRepository<TModel>
 {
-  protected readonly logger: Logger;
-  protected readonly autoGenerateId: boolean;
-  protected readonly idField: string;
-  protected readonly idGenerator: () => string | number;
+  protected readonly logger: Logger
 
   constructor(
     protected readonly model: ModelCtor<TModel>,
-    options: IRepositoryOptions<TModel> = {},
+    options: IRepositoryOptions = {},
   ) {
-    const {
-      autoGenerateId = false,
-      idField = 'id',
-      logger = new Logger(this.constructor.name),
-      idGenerator = randomUUID,
-    } = options;
+    const { logger = new Logger(this.constructor.name) } = options
 
     if (new.target === AbstractRepository) {
-      throw new Error('AbstractRepository cannot be instantiated directly');
+      throw new Error('AbstractRepository cannot be instantiated directly')
     }
 
-    this.logger = logger;
-    this.autoGenerateId = autoGenerateId;
-    this.idField = idField;
-    this.idGenerator = idGenerator;
+    this.logger = logger
   }
 
   public async create(
@@ -108,20 +97,10 @@ export class AbstractRepository<TModel extends Model>
     options?: CreateOptions<Attributes<TModel>>,
   ): Promise<TModel> {
     try {
-      const id = this.autoGenerateId
-        ? { [this.idField]: this.idGenerator() }
-        : {};
-
-      return await this.model.create(
-        {
-          ...dto,
-          ...id,
-        },
-        options,
-      );
+      return await this.model.create(dto, options)
     } catch (error) {
-      this.logger.error(`insert: ${error}`);
-      throw new InternalServerErrorException();
+      this.logger.error(`insert: ${error}`)
+      throw new InternalServerErrorException()
     }
   }
 
@@ -129,7 +108,7 @@ export class AbstractRepository<TModel extends Model>
     dto: CreationAttributes<TModel>,
     options?: CreateOptions<Attributes<TModel>>,
   ): Promise<TModel> {
-    return this.create(dto, options);
+    return this.create(dto, options)
   }
 
   public async insertMany(
@@ -137,19 +116,10 @@ export class AbstractRepository<TModel extends Model>
     options?: BulkCreateOptions<Attributes<TModel>>,
   ): Promise<TModel[]> {
     try {
-      let identifiedDtos = dtos;
-
-      if (this.autoGenerateId) {
-        identifiedDtos = dtos.map((dto) => ({
-          ...dto,
-          [this.idField]: this.idGenerator(),
-        }));
-      }
-
-      return await this.model.bulkCreate(identifiedDtos, options);
+      return await this.model.bulkCreate(dtos, options)
     } catch (error) {
-      this.logger.error(`insertMany: ${error}`);
-      throw new InternalServerErrorException();
+      this.logger.error(`insertMany: ${error}`)
+      throw new InternalServerErrorException()
     }
   }
 
@@ -158,10 +128,10 @@ export class AbstractRepository<TModel extends Model>
     options?: Omit<FindOptions<Attributes<TModel>>, 'where'>,
   ): Promise<TModel | null> {
     try {
-      return await this.model.findByPk(primaryKey, options);
+      return await this.model.findByPk(primaryKey, options)
     } catch (error) {
-      this.logger.error(`findByPk: ${error}`);
-      throw new InternalServerErrorException();
+      this.logger.error(`findByPk: ${error}`)
+      throw new InternalServerErrorException()
     }
   }
 
@@ -173,10 +143,10 @@ export class AbstractRepository<TModel extends Model>
       return await this.model.findOne({
         where: query,
         ...options,
-      });
+      })
     } catch (error) {
-      this.logger.error(`findOne: ${error}`);
-      throw new InternalServerErrorException();
+      this.logger.error(`findOne: ${error}`)
+      throw new InternalServerErrorException()
     }
   }
 
@@ -188,32 +158,28 @@ export class AbstractRepository<TModel extends Model>
       return await this.model.findAll({
         where: query,
         ...options,
-      });
+      })
     } catch (error) {
-      this.logger.error(`findAll: ${error}`);
-      throw new InternalServerErrorException();
+      this.logger.error(`findAll: ${error}`)
+      throw new InternalServerErrorException()
     }
   }
 
   public async findAllPaginated(
-    limit: number,
-    offset: number = 0,
-    query?: WhereOptions<Attributes<TModel>>,
-    options?: Omit<
-      FindAndCountOptions<Attributes<TModel>>,
-      'where' | 'offset' | 'limit'
-    >,
+    options: PaginationOptions<TModel>,
   ): Promise<{ rows: TModel[]; count: number }> {
     try {
+      const { limit = 10, offset = 0, query, findOptions } = options
+
       return await this.model.findAndCountAll({
         where: query,
         limit,
         offset,
-        ...options,
-      });
+        ...findOptions,
+      })
     } catch (error) {
-      this.logger.error(`findAllPaginated: ${error}`);
-      throw new InternalServerErrorException();
+      this.logger.error(`findAllPaginated: ${error}`)
+      throw new InternalServerErrorException()
     }
   }
 
@@ -223,17 +189,17 @@ export class AbstractRepository<TModel extends Model>
     options?: SaveOptions<Attributes<TModel>>,
   ): Promise<TModel | null> {
     try {
-      const entity = await this.findByPk(primaryKey);
+      const entity = await this.findByPk(primaryKey)
 
       if (!entity) {
-        return null;
+        return null
       }
 
-      entity.set(dto);
-      return await entity.save(options);
+      entity.set(dto)
+      return await entity.save(options)
     } catch (error) {
-      this.logger.error(`updatedByPk: ${error}`);
-      throw new InternalServerErrorException();
+      this.logger.error(`updatedByPk: ${error}`)
+      throw new InternalServerErrorException()
     }
   }
 
@@ -244,21 +210,21 @@ export class AbstractRepository<TModel extends Model>
     try {
       const entity = await this.findByPk(primaryKey, {
         paranoid: !options?.force,
-      });
+      })
 
       if (!entity) {
-        return null;
+        return null
       }
 
       if (options?.force && entity.getDataValue('deletedAt') !== undefined) {
-        entity.setDataValue('deletedAt', new Date());
+        entity.setDataValue('deletedAt', new Date())
       }
-      await entity.destroy(options);
+      await entity.destroy(options)
 
-      return entity;
+      return entity
     } catch (error) {
-      this.logger.error(`deleteByPk: ${error}`);
-      throw new InternalServerErrorException();
+      this.logger.error(`deleteByPk: ${error}`)
+      throw new InternalServerErrorException()
     }
   }
 
@@ -270,18 +236,18 @@ export class AbstractRepository<TModel extends Model>
       const entity = await this.findByPk(primaryKey, {
         ...options,
         paranoid: false,
-      });
+      })
 
       if (!entity) {
-        return null;
+        return null
       }
 
-      await entity.restore(options);
+      await entity.restore(options)
 
-      return entity;
+      return entity
     } catch (error) {
-      this.logger.error(`restoreByPk: ${error}`);
-      throw new InternalServerErrorException();
+      this.logger.error(`restoreByPk: ${error}`)
+      throw new InternalServerErrorException()
     }
   }
 
@@ -290,11 +256,11 @@ export class AbstractRepository<TModel extends Model>
   ): Promise<R> {
     return this.model.sequelize!.transaction(async (transaction) => {
       try {
-        return await runInTransaction(transaction);
+        return await runInTransaction(transaction)
       } catch (error) {
-        this.logger.error(`transaction: ${error}`);
-        throw new InternalServerErrorException();
+        this.logger.error(`transaction: ${error}`)
+        throw new InternalServerErrorException()
       }
-    });
+    })
   }
 }

@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# Unreleased
+### Removed:
+* Autogenerating id is removed
+
+### Changed:
+* Updated `findAllPaginated` parameters
+
 # Patch 0.1.11
 ### Updated:
 * New [**README.md**](README.md) file
@@ -14,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * New method for find with pagination `findAllPaginated`
 
 ### Changed:
-* Now default auto generated id is type of UUIDv4 instead of v7, what helped to reduce package size 
+* Now default auto generated id is type of UUIDv4 instead of v7, what helped to reduce package size
 
 # Patch 0.1.9
 ### Fixed:
@@ -41,7 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added:
 * idGenerator config option. See [README.md](README.md/#️-options)
 
-### Fixed: 
+### Fixed:
 * Added types for protected fields, so they can be reused in derived classes
 
 ## Patch 0.1.3
