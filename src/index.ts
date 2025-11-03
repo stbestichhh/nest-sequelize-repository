@@ -72,6 +72,7 @@ export interface IRepository<TModel extends Model> {
   transaction<R>(
     runInTransaction: (transaction: Transaction) => Promise<R>,
   ): Promise<R>
+  calculateOffset(limit: number, page: number): number
 }
 
 export class AbstractRepository<TModel extends Model>
@@ -262,5 +263,9 @@ export class AbstractRepository<TModel extends Model>
         throw new InternalServerErrorException()
       }
     })
+  }
+
+  public calculateOffset(limit: number, page: number): number {
+    return limit * (page - 1)
   }
 }

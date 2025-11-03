@@ -67,4 +67,5 @@ export interface IRepository<TModel extends Model> {
   transaction<R>(
     runInTransaction: (transaction: Transaction) => Promise<R>,
   ): Promise<R>
+  calculateOffset(limit: number, page: number): number
 }

@@ -205,4 +205,8 @@ export class AbstractRepository<TModel extends Model>
       }
     })
   }
+
+  public calculateOffset(limit: number, page: number): number {
+    return limit * (page - 1)
+  }
 }
