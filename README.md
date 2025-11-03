@@ -56,9 +56,6 @@ Configuration options for the abstract repository:
 
 | Option           | Type                     | Default                 | Description                                           |
 |------------------|--------------------------|-------------------------|-------------------------------------------------------|
-| `autoGenerateId` | `boolean`                | `false`                 | Whether to auto-generate a UUIDv4 for the primary key |
-| `idField`        | `string`                 | `'id'`                  | Name of the primary key field                         |
-| `idGenerator`    | `() => string \| number` | `UUIDv4`                | Function for generating unique IDs                    |
 | `logger`         | `Logger`                 | `NestJS default Logger` | Optional NestJS logger instance for internal logging  |
 
 ---
@@ -67,19 +64,19 @@ Configuration options for the abstract repository:
 
 All methods return Promises.
 
-| Method                                               | Parameters                                                                                                 | Description                                     |            |                                        |
-|------------------------------------------------------|------------------------------------------------------------------------------------------------------------|-------------------------------------------------|------------|----------------------------------------|
-| `create(dto, options?)`                              | `dto: CreationAttributes<TModel>`, `options?: CreateOptions<TModel>`                                       | Creates a new record                            |            |                                        |
-| `insert(dto, options?)`                              | Same as `create`                                                                                           | Alias for `create`                              |            |                                        |
-| `insertMany(dtos, options?)`                         | `dtos: CreationAttributes<TModel>[]`, `options?: BulkCreateOptions<Attributes<TModel>>`                    | Creates multiple records                        |            |                                        |
-| `findByPk(primaryKey, options?)`                     | `primaryKey: string \| number`, `options?: Omit<FindOptions, 'where'>`                                     | Find record by primary key                      |            |                                        |
-| `findOne(query?, options?)`                          | `query?: WhereOptions`, `options?: Omit<FindOptions, 'where'>`                                             | Find single record by query                     |            |                                        |
-| `findAll(query?, options?)`                          | `query?: WhereOptions`, `options?: Omit<FindOptions, 'where'>`                                             | Find all matching records                       |            |                                        |
-| `findAllPaginated(limit, offset?, query?, options?)` | `limit: number`, `offset?: number`, `query?: WhereOptions`, \`options?: Omit\<FindAndCountOptions, 'where' | 'offset'                                        | 'limit'>\` | Find paginated records and total count |
-| `updateByPk(primaryKey, dto, options?)`              | `primaryKey: string \| number`, `dto: Partial<Attributes<TModel>>`, `options?: SaveOptions`                | Update record by primary key                    |            |                                        |
-| `deleteByPk(primaryKey, options?)`                   | `primaryKey: string \| number`, `options?: InstanceDestroyOptions`                                         | Delete (soft/hard) record by primary key        |            |                                        |
-| `restoreByPk(primaryKey, options?)`                  | `primaryKey: string \| number`, `options?: InstanceRestoreOptions`                                         | Restore previously soft-deleted record          |            |                                        |
-| `transaction(runInTransaction)`                      | `(transaction: Transaction) => Promise<R>`                                                                 | Execute callback within a Sequelize transaction |            |                                        |
+| Method                                  | Parameters                                                                                                                         | Description                                     | 
+|-----------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------|
+| `create(dto, options?)`                 | `dto: CreationAttributes<TModel>`, `options?: CreateOptions<TModel>`                                                               | Creates a new record                            |  
+| `insert(dto, options?)`                 | Same as `create`                                                                                                                   | Alias for `create`                              |  
+| `insertMany(dtos, options?)`            | `dtos: CreationAttributes<TModel>[]`, `options?: BulkCreateOptions<Attributes<TModel>>`                                            | Creates multiple records                        |   
+| `findByPk(primaryKey, options?)`        | `primaryKey: string \| number`, `options?: Omit<FindOptions, 'where'>`                                                             | Find record by primary key                      |   
+| `findOne(query?, options?)`             | `query?: WhereOptions`, `options?: Omit<FindOptions, 'where'>`                                                                     | Find single record by query                     |   
+| `findAll(query?, options?)`             | `query?: WhereOptions`, `options?: Omit<FindOptions, 'where'>`                                                                     | Find all matching records                       |   
+| `findAllPaginated(options?)`            | `limit?: number`, `offset?: number`, `query?: WhereOptions`, `options?: Omit<FindAndCountOptions, 'where' \| 'offset' \| 'limit'>` | Find paginated records and total count          |
+| `updateByPk(primaryKey, dto, options?)` | `primaryKey: string \| number`, `dto: Partial<Attributes<TModel>>`, `options?: SaveOptions`                                        | Update record by primary key                    |
+| `deleteByPk(primaryKey, options?)`      | `primaryKey: string \| number`, `options?: InstanceDestroyOptions`                                                                 | Delete (soft/hard) record by primary key        |
+| `restoreByPk(primaryKey, options?)`     | `primaryKey: string \| number`, `options?: InstanceRestoreOptions`                                                                 | Restore previously soft-deleted record          |
+| `transaction(runInTransaction)`         | `(transaction: Transaction) => Promise<R>`                                                                                         | Execute callback within a Sequelize transaction |
 
 ---
 
@@ -91,6 +88,7 @@ All methods return Promises.
 @Table({ tableName: 'users', paranoid: true })
 export class User extends Model<User> {
   @PrimaryKey
+  @Default(DataType.UUIDV4)
   @Column
   user_id: string;
 
@@ -112,10 +110,7 @@ import { AbstractRepository } from 'nest-sequelize-repository';
 @Injectable()
 export class UserRepository extends AbstractRepository<User> {
   constructor(@InjectModel(User) userModel: typeof User) {
-    super(userModel, {
-      autoGenerateId: true,
-      idField: 'user_id',
-    });
+    super(userModel);
   }
 }
 ```
@@ -151,9 +146,6 @@ You can pass options when instantiating:
 
 ```ts
 {
-  autoGenerateId: true,                 // optional
-  idField: 'user_id',                   // optional, default field is 'id'  
-  idGenerator: myGenerateIdFunc,        // optional, default is UUIDv4
   logger: new MyCustomLogger('MyRepo'), // optional
 }
 ```

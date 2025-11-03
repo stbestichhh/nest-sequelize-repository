@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common';
+import { Logger } from '@nestjs/common'
 import {
   Transaction,
   WhereOptions,
@@ -10,42 +10,48 @@ import {
   SaveOptions,
   FindOptions,
   BulkCreateOptions,
-} from 'sequelize';
-import { Model, ModelCtor } from 'sequelize-typescript';
+  FindAndCountOptions,
+} from 'sequelize'
+import { Model, ModelCtor } from 'sequelize-typescript'
+
+/**
+ * Options for the find with pagination.
+ *
+ * @template TModel Type of the Sequelize model.
+ */
+export interface PaginationOptions<TModel extends Model> {
+  /**
+   * Sets the amount of returned records.
+   */
+  limit?: number
+
+  /**
+   * Amount of records to skip from the start.
+   */
+  offset?: number
+
+  /**
+   * A Sequelize where clause.
+   */
+  query?: WhereOptions<Attributes<TModel>>
+
+  /**
+   * Optional Sequelize find options, excluding 'where', 'offset' and 'limit'.
+   */
+  findOptions?: Omit<
+    FindAndCountOptions<Attributes<TModel>>,
+    'where' | 'offset' | 'limit'
+  >
+}
 
 /**
  * Configuration options for the abstract repository.
- *
- * @template T Model type extending Sequelize Model.
  */
-export interface IRepositoryOptions<T extends Model> {
+export interface IRepositoryOptions {
   /**
-   * Whether to auto-generate a UUIDv7 for the primary key.
-   *
-   * @default false
+   * Optional NestJS logger instance used for internal logging.
    */
-  autoGenerateId?: boolean;
-
-  /**
-   * The name of the ID field used as a primary key
-   *
-   * @default 'id'
-   */
-  idField?: Extract<keyof Attributes<T>, string>;
-
-  /**
-   * Function responsible for generating unique IDs when `autoGenerateId` is true.
-   *
-   * @default UUIDv4 from 'node:crypto' package
-   * @returns string
-   * @returns number
-   */
-  idGenerator?: () => string | number;
-
-  /**
-   * Optional NestJS logger instance used for internal logging
-   */
-  logger?: Logger;
+  logger?: Logger
 }
 
 /**
@@ -65,7 +71,7 @@ export interface IRepository<TModel extends Model> {
   create(
     dto: CreationAttributes<TModel>,
     options?: CreateOptions<TModel>,
-  ): Promise<TModel>;
+  ): Promise<TModel>
 
   /**
    * Creates a new record in the database. Alias for `create`
@@ -77,7 +83,7 @@ export interface IRepository<TModel extends Model> {
   insert(
     dto: CreationAttributes<TModel>,
     options?: CreateOptions<TModel>,
-  ): Promise<TModel>;
+  ): Promise<TModel>
 
   /**
    * Creates multiple new records in the database.
@@ -89,7 +95,7 @@ export interface IRepository<TModel extends Model> {
   insertMany(
     dtos: CreationAttributes<TModel>[],
     options?: BulkCreateOptions<Attributes<TModel>>,
-  ): Promise<TModel[]>;
+  ): Promise<TModel[]>
 
   /**
    * Finds a record by its primary key
@@ -101,7 +107,7 @@ export interface IRepository<TModel extends Model> {
   findByPk(
     primaryKey: string | number,
     options?: Omit<FindOptions<Attributes<TModel>>, 'where'>,
-  ): Promise<TModel | null>;
+  ): Promise<TModel | null>
 
   /**
    * Finds a single record by matching the provided query
@@ -113,7 +119,7 @@ export interface IRepository<TModel extends Model> {
   findOne(
     query?: WhereOptions<Attributes<TModel>>,
     options?: Omit<FindOptions<Attributes<TModel>>, 'where'>,
-  ): Promise<TModel | null>;
+  ): Promise<TModel | null>
 
   /**
    * Finds all records matching the provided query
@@ -125,26 +131,18 @@ export interface IRepository<TModel extends Model> {
   findAll(
     query?: WhereOptions<Attributes<TModel>>,
     options?: Omit<FindOptions<Attributes<TModel>>, 'where'>,
-  ): Promise<TModel[]>;
+  ): Promise<TModel[]>
 
   /**
    * Find first amount of records set by limit and count all existing records
    *
-   * @param limit Amout of records to find and return.
-   * @param offset Amout of records to skip.
-   * @param query A Sequelize where clause.
-   * @param options Optional Sequelize find options, excluding `where`.
+   * @param options Pagination options.
+   *
    * @returns A Promise resolving `rows`(found records) and `count`(amout of existing records).
    */
   findAllPaginated(
-    limit: number,
-    offset?: number,
-    query?: WhereOptions<Attributes<TModel>>,
-    options?: Omit<
-      FindAndCountOptions<Attributes<TModel>>,
-      'where' | 'offset' | 'limit'
-    >,
-  ): Promise<{ rows: TModel[]; count: number }>;
+    options: PaginationOptions<TModel>,
+  ): Promise<{ rows: TModel[]; count: number }>
 
   /**
    * Updates a records by its primary key.
@@ -158,7 +156,7 @@ export interface IRepository<TModel extends Model> {
     primaryKey: string | number,
     dto: Partial<Attributes<TModel>>,
     options?: SaveOptions<Attributes<TModel>>,
-  ): Promise<TModel | null>;
+  ): Promise<TModel | null>
 
   /**
    * Deletes (soft or hard) a record by its primary key.
@@ -170,7 +168,7 @@ export interface IRepository<TModel extends Model> {
   deleteByPk(
     primaryKey: string | number,
     options?: InstanceDestroyOptions,
-  ): Promise<TModel | null>;
+  ): Promise<TModel | null>
 
   /**
    * Restores a preiously soft-deleted record by its primary key.
@@ -182,7 +180,7 @@ export interface IRepository<TModel extends Model> {
   restoreByPk(
     primaryKey: string | number,
     options?: InstanceRestoreOptions,
-  ): Promise<TModel | null>;
+  ): Promise<TModel | null>
 
   /**
    * Executes a callback function withing a Sequelize transaction.
@@ -192,7 +190,7 @@ export interface IRepository<TModel extends Model> {
    */
   transaction<R>(
     runInTransaction: (transaction: Transaction) => Promise<R>,
-  ): Promise<R>;
+  ): Promise<R>
 }
 
 /**
@@ -207,22 +205,7 @@ export declare class AbstractRepository<TModel extends Model>
   /**
    * Logger instance used for logging errors.
    */
-  protected readonly logger: Logger;
-
-  /**
-   * Flag indicating whether to auto-generate the ID field on creation.
-   */
-  protected readonly autoGenerateId: boolean;
-
-  /**
-   * The name of the field used as the model's unique identifier.
-   */
-  protected readonly idField: string;
-
-  /**
-   * Function responsible for generating unique IDs when `autoGenerateId` is true.
-   */
-  protected readonly idGenerator: () => string | number;
+  protected readonly logger: Logger
 
   /**
    * Constructs the abstract repository.
@@ -230,7 +213,7 @@ export declare class AbstractRepository<TModel extends Model>
    * @param model The Sequelize model constructor.
    * @param options Optional configuration options.
    */
-  constructor(model: ModelCtor<TModel>, options?: IRepositoryOptions<TModel>);
+  constructor(model: ModelCtor<TModel>, options?: IRepositoryOptions)
 
   /**
    * @inheritdoc
@@ -238,7 +221,7 @@ export declare class AbstractRepository<TModel extends Model>
   create(
     dto: CreationAttributes<TModel>,
     options?: CreateOptions<TModel>,
-  ): Promise<TModel>;
+  ): Promise<TModel>
 
   /**
    * @inheritdoc
@@ -246,7 +229,7 @@ export declare class AbstractRepository<TModel extends Model>
   insert(
     dto: CreationAttributes<TModel>,
     options?: CreateOptions<TModel>,
-  ): Promise<TModel>;
+  ): Promise<TModel>
 
   /**
    * @inheritdoc
@@ -254,7 +237,7 @@ export declare class AbstractRepository<TModel extends Model>
   insertMany(
     dtos: CreationAttributes<TModel>[],
     options?: BulkCreateOptions<Attributes<TModel>>,
-  ): Promise<TModel[]>;
+  ): Promise<TModel[]>
 
   /**
    * @inheritdoc
@@ -262,7 +245,7 @@ export declare class AbstractRepository<TModel extends Model>
   findByPk(
     primaryKey: string | number,
     options?: Omit<FindOptions<Attributes<TModel>>, 'where'>,
-  ): Promise<TModel | null>;
+  ): Promise<TModel | null>
 
   /**
    * @inheritdoc
@@ -270,7 +253,7 @@ export declare class AbstractRepository<TModel extends Model>
   findOne(
     query?: WhereOptions<Attributes<TModel>>,
     options?: Omit<FindOptions<Attributes<TModel>>, 'where'>,
-  ): Promise<TModel | null>;
+  ): Promise<TModel | null>
 
   /**
    * @inheritdoc
@@ -278,7 +261,14 @@ export declare class AbstractRepository<TModel extends Model>
   findAll(
     query?: WhereOptions<Attributes<TModel>>,
     options?: Omit<FindOptions<Attributes<TModel>>, 'where'>,
-  ): Promise<TModel[]>;
+  ): Promise<TModel[]>
+
+  /**
+   * @inheritdoc
+   */
+  findAllPaginated(
+    options: PaginationOptions<TModel>,
+  ): Promise<{ rows: TModel[]; count: number }>
 
   /**
    * @inheritdoc
@@ -287,7 +277,7 @@ export declare class AbstractRepository<TModel extends Model>
     primaryKey: string | number,
     dto: Partial<Attributes<TModel>>,
     options?: SaveOptions<Attributes<TModel>>,
-  ): Promise<TModel | null>;
+  ): Promise<TModel | null>
 
   /**
    * @inheritdoc
@@ -295,7 +285,7 @@ export declare class AbstractRepository<TModel extends Model>
   deleteByPk(
     primaryKey: string | number,
     options?: InstanceDestroyOptions,
-  ): Promise<TModel | null>;
+  ): Promise<TModel | null>
 
   /**
    * @inheritdoc
@@ -303,12 +293,12 @@ export declare class AbstractRepository<TModel extends Model>
   restoreByPk(
     primaryKey: string | number,
     options?: InstanceRestoreOptions,
-  ): Promise<TModel | null>;
+  ): Promise<TModel | null>
 
   /**
    * @inheritdoc
    */
   transaction<R>(
     runInTransaction: (transaction: Transaction) => Promise<R>,
-  ): Promise<R>;
+  ): Promise<R>
 }
