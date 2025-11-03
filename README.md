@@ -64,19 +64,20 @@ Configuration options for the abstract repository:
 
 All methods return Promises.
 
-| Method                                  | Parameters                                                                                                                         | Description                                     | 
-|-----------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------|
-| `create(dto, options?)`                 | `dto: CreationAttributes<TModel>`, `options?: CreateOptions<TModel>`                                                               | Creates a new record                            |  
-| `insert(dto, options?)`                 | Same as `create`                                                                                                                   | Alias for `create`                              |  
-| `insertMany(dtos, options?)`            | `dtos: CreationAttributes<TModel>[]`, `options?: BulkCreateOptions<Attributes<TModel>>`                                            | Creates multiple records                        |   
-| `findByPk(primaryKey, options?)`        | `primaryKey: string \| number`, `options?: Omit<FindOptions, 'where'>`                                                             | Find record by primary key                      |   
-| `findOne(query?, options?)`             | `query?: WhereOptions`, `options?: Omit<FindOptions, 'where'>`                                                                     | Find single record by query                     |   
-| `findAll(query?, options?)`             | `query?: WhereOptions`, `options?: Omit<FindOptions, 'where'>`                                                                     | Find all matching records                       |   
-| `findAllPaginated(options?)`            | `limit?: number`, `offset?: number`, `query?: WhereOptions`, `options?: Omit<FindAndCountOptions, 'where' \| 'offset' \| 'limit'>` | Find paginated records and total count          |
-| `updateByPk(primaryKey, dto, options?)` | `primaryKey: string \| number`, `dto: Partial<Attributes<TModel>>`, `options?: SaveOptions`                                        | Update record by primary key                    |
-| `deleteByPk(primaryKey, options?)`      | `primaryKey: string \| number`, `options?: InstanceDestroyOptions`                                                                 | Delete (soft/hard) record by primary key        |
-| `restoreByPk(primaryKey, options?)`     | `primaryKey: string \| number`, `options?: InstanceRestoreOptions`                                                                 | Restore previously soft-deleted record          |
-| `transaction(runInTransaction)`         | `(transaction: Transaction) => Promise<R>`                                                                                         | Execute callback within a Sequelize transaction |
+| Method                                         | Parameters                                                                                                                         | Description                                     | 
+|------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------|
+| `create(dto, options?)`                        | `dto: CreationAttributes<TModel>`, `options?: CreateOptions<TModel>`                                                               | Creates a new record                            |  
+| `insert(dto, options?)`                        | Same as `create`                                                                                                                   | Alias for `create`                              |  
+| `insertMany(dtos, options?)`                   | `dtos: CreationAttributes<TModel>[]`, `options?: BulkCreateOptions<Attributes<TModel>>`                                            | Creates multiple records                        |   
+| `findByPk(primaryKey, options?)`               | `primaryKey: string \| number`, `options?: Omit<FindOptions, 'where'>`                                                             | Find record by primary key                      |   
+| `findOne(query?, options?)`                    | `query?: WhereOptions`, `options?: Omit<FindOptions, 'where'>`                                                                     | Find single record by query                     |   
+| `findAll(query?, options?)`                    | `query?: WhereOptions`, `options?: Omit<FindOptions, 'where'>`                                                                     | Find all matching records                       |   
+| `findAllPaginated(options?)`                   | `limit?: number`, `offset?: number`, `query?: WhereOptions`, `options?: Omit<FindAndCountOptions, 'where' \| 'offset' \| 'limit'>` | Find paginated records and total count          |
+| `updateByPk(primaryKey, dto, options?)`        | `primaryKey: string \| number`, `dto: Partial<Attributes<TModel>>`, `options?: SaveOptions`                                        | Update record by primary key                    |
+| `deleteByPk(primaryKey, options?)`             | `primaryKey: string \| number`, `options?: InstanceDestroyOptions`                                                                 | Delete (soft/hard) record by primary key        |
+| `restoreByPk(primaryKey, options?)`            | `primaryKey: string \| number`, `options?: InstanceRestoreOptions`                                                                 | Restore previously soft-deleted record          |
+| `transaction(runInTransaction)`                | `(transaction: Transaction) => Promise<R>`                                                                                         | Execute callback within a Sequelize transaction |
+| `calculateOffset(limit: number, page: number)` | `limit: number, page: number`                                                                                                      | Calculate offset for page pagination            |
 
 ---
 

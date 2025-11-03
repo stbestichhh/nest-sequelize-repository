@@ -191,6 +191,15 @@ export interface IRepository<TModel extends Model> {
   transaction<R>(
     runInTransaction: (transaction: Transaction) => Promise<R>,
   ): Promise<R>
+
+  /**
+   * Calculate offset for page pagination
+   *
+   * @param limit Amount of records to return per page
+   * @param page Target page number
+   * @returns Number, amount of records to skip (offset)
+   */
+  calculateOffset(limit: number, page: number): number
 }
 
 /**
@@ -301,4 +310,9 @@ export declare class AbstractRepository<TModel extends Model>
   transaction<R>(
     runInTransaction: (transaction: Transaction) => Promise<R>,
   ): Promise<R>
+
+  /**
+   * @inheritDoc
+   */
+  calculateOffset(limit: number, page: number): number
 }
