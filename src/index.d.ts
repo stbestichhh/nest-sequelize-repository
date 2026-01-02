@@ -12,17 +12,7 @@ import {
   BulkCreateOptions,
   FindAndCountOptions,
 } from 'sequelize'
-import {
-  AllowNull,
-  Column,
-  CreatedAt,
-  DataType,
-  Default,
-  DeletedAt,
-  Model,
-  ModelCtor,
-  UpdatedAt,
-} from 'sequelize-typescript'
+import { Model, ModelCtor } from 'sequelize-typescript'
 
 /**
  * Options for the find with pagination.
@@ -39,6 +29,11 @@ export interface PaginationOptions<TModel extends Model> {
    * Amount of records to skip from the start.
    */
   offset?: number
+
+  /**
+   * Used for page pagination instead of offset.
+   */
+  page?: number
 
   /**
    * A Sequelize where clause.
