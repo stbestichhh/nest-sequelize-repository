@@ -12,7 +12,17 @@ import {
   BulkCreateOptions,
   FindAndCountOptions,
 } from 'sequelize'
-import { Model, ModelCtor } from 'sequelize-typescript'
+import {
+  AllowNull,
+  Column,
+  CreatedAt,
+  DataType,
+  Default,
+  DeletedAt,
+  Model,
+  ModelCtor,
+  UpdatedAt,
+} from 'sequelize-typescript'
 
 /**
  * Options for the find with pagination.
@@ -203,14 +213,43 @@ export interface IRepository<TModel extends Model> {
 }
 
 /**
+ * Base model class based on sequelize `Model` class
+ * adding timestamps.
+ *
+ * @template TModelAttributes Type of the Model class. Default is `any`
+ * @template TCreationAttributes Type of the Model creation attributes. Default is Model class
+ */
+export declare class BaseModel<
+  TModelAttributes extends {} = any,
+  TCreationAttributes extends {} = TModelAttributes,
+> extends Model<TModelAttributes, TCreationAttributes> {
+  /**
+   * Model creation time
+   */
+  createdAt: Date
+
+  /**
+   * Model update time. Default is `createdAt` timestamp
+   */
+  updatedAt: Date
+
+  /**
+   * Model deletion time
+   *
+   * @default null
+   */
+  deletedAt: Date | null
+}
+
+/**
  * Base abstract class providing default implementations of common
  * repository operations. Designed to be extended for model-specific logic.
  *
  * @template TModel Type of the Sequelize model.
  */
-export declare class AbstractRepository<TModel extends Model>
-  implements IRepository<TModel>
-{
+export declare class AbstractRepository<
+  TModel extends Model,
+> implements IRepository<TModel> {
   /**
    * Logger instance used for logging errors.
    */

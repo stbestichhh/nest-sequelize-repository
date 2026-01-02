@@ -16,6 +16,7 @@ import { Model } from 'sequelize-typescript'
 export interface PaginationOptions<TModel extends Model> {
   limit?: number
   offset?: number
+  page?: number
   query?: WhereOptions<Attributes<TModel>>
   findOptions?: Omit<
     FindAndCountOptions<Attributes<TModel>>,

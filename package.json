@@ -1,7 +1,7 @@
 {
-  "name": "nest-sequelize-repository",
-  "version": "0.1.11",
-  "description": "Abstract repository for Nest and Sequelize.js ORM",
+  "name": "@nestlize/repository",
+  "version": "0.1.13",
+  "description": "Abstract repository and other database tools for Nest and Sequelize.js ORM",
   "keywords": [
     "sequelize.js",
     "abstract",
@@ -36,31 +36,30 @@
     "index.js",
     "index.d.ts",
     "LICENSE",
-    "README.md",
-    "CHANGELOG.md"
+    "README.md"
   ],
   "devDependencies": {
-    "@nestjs/common": "^11.1.0",
+    "@nestjs/common": "^11.1.11",
     "@types/jest": "^29.5.14",
-    "@types/node": "^22.15.2",
+    "@types/node": "^22.19.3",
     "husky": "^9.1.7",
     "jest": "^29.7.0",
-    "prettier": "^3.5.3",
+    "prettier": "^3.7.4",
     "reflect-metadata": "^0.2.2",
-    "rimraf": "^6.0.1",
+    "rimraf": "^6.1.2",
     "rxjs": "^7.8.2",
     "sequelize": "^6.37.7",
     "sequelize-typescript": "^2.1.6",
     "sqlite3": "^5.1.7",
-    "ts-jest": "^29.3.2",
-    "tsx": "^4.19.3",
-    "typescript": "^5.8.3"
+    "ts-jest": "^29.4.6",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
   },
   "peerDependencies": {
     "@nestjs/common": "11.x",
     "reflect-metadata": "0.x",
+    "rxjs": "7.x",
     "sequelize": "6.x",
-    "sequelize-typescript": "2.x",
-    "rxjs": "7.x"
+    "sequelize-typescript": "2.x"
   }
 }

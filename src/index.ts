@@ -12,11 +12,22 @@ import {
   BulkCreateOptions,
   FindAndCountOptions,
 } from 'sequelize'
-import { Model, ModelCtor } from 'sequelize-typescript'
+import {
+  AllowNull,
+  Column,
+  CreatedAt,
+  DataType,
+  Default,
+  DeletedAt,
+  Model,
+  ModelCtor,
+  UpdatedAt,
+} from 'sequelize-typescript'
 
 export interface PaginationOptions<TModel extends Model> {
   limit?: number
   offset?: number
+  page?: number
   query?: WhereOptions<Attributes<TModel>>
   findOptions?: Omit<
     FindAndCountOptions<Attributes<TModel>>,
@@ -75,9 +86,28 @@ export interface IRepository<TModel extends Model> {
   calculateOffset(limit: number, page: number): number
 }
 
-export class AbstractRepository<TModel extends Model>
-  implements IRepository<TModel>
-{
+export class BaseModel<
+  TModelAttributes extends {} = any,
+  TCreationAttributes extends {} = TModelAttributes,
+> extends Model<TModelAttributes, TCreationAttributes> {
+  @CreatedAt
+  @Column
+  declare createdAt: Date
+
+  @UpdatedAt
+  @Column
+  declare updatedAt: Date
+
+  @Default(null)
+  @AllowNull
+  @DeletedAt
+  @Column({ type: DataType.DATE })
+  declare deletedAt: Date | null
+}
+
+export class AbstractRepository<
+  TModel extends Model,
+> implements IRepository<TModel> {
   protected readonly logger: Logger
 
   constructor(
@@ -170,7 +200,11 @@ export class AbstractRepository<TModel extends Model>
     options: PaginationOptions<TModel>,
   ): Promise<{ rows: TModel[]; count: number }> {
     try {
-      const { limit = 10, offset = 0, query, findOptions } = options
+      let { limit = 10, offset = 0, page, query, findOptions } = options
+
+      if (!offset && page) {
+        offset = this.calculateOffset(limit, page)
+      }
 
       return await this.model.findAndCountAll({
         where: query,

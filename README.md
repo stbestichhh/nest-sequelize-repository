@@ -22,11 +22,11 @@ Supports:
 ## 📦 Installation
 
 ```bash
-npm install nest-sequelize-repository
+npm install @nestlize/repository
 # or
-yarn add nest-sequelize-repository
+yarn add @nestlize/repository
 # or
-pnpm add nest-sequelize-repository
+pnpm add @nestlize/repository
 ```
 
 ---
@@ -64,20 +64,20 @@ Configuration options for the abstract repository:
 
 All methods return Promises.
 
-| Method                                         | Parameters                                                                                                                         | Description                                     | 
-|------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------|
-| `create(dto, options?)`                        | `dto: CreationAttributes<TModel>`, `options?: CreateOptions<TModel>`                                                               | Creates a new record                            |  
-| `insert(dto, options?)`                        | Same as `create`                                                                                                                   | Alias for `create`                              |  
-| `insertMany(dtos, options?)`                   | `dtos: CreationAttributes<TModel>[]`, `options?: BulkCreateOptions<Attributes<TModel>>`                                            | Creates multiple records                        |   
-| `findByPk(primaryKey, options?)`               | `primaryKey: string \| number`, `options?: Omit<FindOptions, 'where'>`                                                             | Find record by primary key                      |   
-| `findOne(query?, options?)`                    | `query?: WhereOptions`, `options?: Omit<FindOptions, 'where'>`                                                                     | Find single record by query                     |   
-| `findAll(query?, options?)`                    | `query?: WhereOptions`, `options?: Omit<FindOptions, 'where'>`                                                                     | Find all matching records                       |   
-| `findAllPaginated(options?)`                   | `limit?: number`, `offset?: number`, `query?: WhereOptions`, `options?: Omit<FindAndCountOptions, 'where' \| 'offset' \| 'limit'>` | Find paginated records and total count          |
-| `updateByPk(primaryKey, dto, options?)`        | `primaryKey: string \| number`, `dto: Partial<Attributes<TModel>>`, `options?: SaveOptions`                                        | Update record by primary key                    |
-| `deleteByPk(primaryKey, options?)`             | `primaryKey: string \| number`, `options?: InstanceDestroyOptions`                                                                 | Delete (soft/hard) record by primary key        |
-| `restoreByPk(primaryKey, options?)`            | `primaryKey: string \| number`, `options?: InstanceRestoreOptions`                                                                 | Restore previously soft-deleted record          |
-| `transaction(runInTransaction)`                | `(transaction: Transaction) => Promise<R>`                                                                                         | Execute callback within a Sequelize transaction |
-| `calculateOffset(limit: number, page: number)` | `limit: number, page: number`                                                                                                      | Calculate offset for page pagination            |
+| Method                                         | Parameters                                                                                                                                          | Description                                     | 
+|------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------|
+| `create(dto, options?)`                        | `dto: CreationAttributes<TModel>`, `options?: CreateOptions<TModel>`                                                                                | Creates a new record                            |  
+| `insert(dto, options?)`                        | Same as `create`                                                                                                                                    | Alias for `create`                              |  
+| `insertMany(dtos, options?)`                   | `dtos: CreationAttributes<TModel>[]`, `options?: BulkCreateOptions<Attributes<TModel>>`                                                             | Creates multiple records                        |   
+| `findByPk(primaryKey, options?)`               | `primaryKey: string \| number`, `options?: Omit<FindOptions, 'where'>`                                                                              | Find record by primary key                      |   
+| `findOne(query?, options?)`                    | `query?: WhereOptions`, `options?: Omit<FindOptions, 'where'>`                                                                                      | Find single record by query                     |   
+| `findAll(query?, options?)`                    | `query?: WhereOptions`, `options?: Omit<FindOptions, 'where'>`                                                                                      | Find all matching records                       |   
+| `findAllPaginated(options?)`                   | `limit?: number`, `offset?: number`, `page?: number`, `query?: WhereOptions`, `options?: Omit<FindAndCountOptions, 'where' \| 'offset' \| 'limit'>` | Find paginated records and total count          |
+| `updateByPk(primaryKey, dto, options?)`        | `primaryKey: string \| number`, `dto: Partial<Attributes<TModel>>`, `options?: SaveOptions`                                                         | Update record by primary key                    |
+| `deleteByPk(primaryKey, options?)`             | `primaryKey: string \| number`, `options?: InstanceDestroyOptions`                                                                                  | Delete (soft/hard) record by primary key        |
+| `restoreByPk(primaryKey, options?)`            | `primaryKey: string \| number`, `options?: InstanceRestoreOptions`                                                                                  | Restore previously soft-deleted record          |
+| `transaction(runInTransaction)`                | `(transaction: Transaction) => Promise<R>`                                                                                                          | Execute callback within a Sequelize transaction |
+| `calculateOffset(limit: number, page: number)` | `limit: number, page: number`                                                                                                                       | Calculate offset for page pagination            |
 
 ---
 
@@ -85,9 +85,13 @@ All methods return Promises.
 
 ### 1. Define a model
 
+[`BaseModel`](src/base.model.ts) extends from sequelize `Model` class adding timestamps
+
 ```ts
+import { BaseModel } from '@nestlize/repository'
+
 @Table({ tableName: 'users', paranoid: true })
-export class User extends Model<User> {
+export class User extends BaseModel<User> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column
@@ -106,7 +110,7 @@ export class User extends Model<User> {
 ### 2. Create repository
 
 ```ts
-import { AbstractRepository } from 'nest-sequelize-repository';
+import { AbstractRepository } from '@nestlize/repository';
 
 @Injectable()
 export class UserRepository extends AbstractRepository<User> {

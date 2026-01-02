@@ -10,15 +10,14 @@ import {
   InstanceDestroyOptions,
   InstanceRestoreOptions,
   BulkCreateOptions,
-  FindAndCountOptions,
 } from 'sequelize'
 import { IRepository, PaginationOptions } from './IRepository'
 import { Model, ModelCtor } from 'sequelize-typescript'
 import { IRepositoryOptions } from './IRepositoryOptions'
 
-export class AbstractRepository<TModel extends Model>
-  implements IRepository<TModel>
-{
+export class AbstractRepository<
+  TModel extends Model,
+> implements IRepository<TModel> {
   protected readonly logger: Logger
 
   constructor(
@@ -111,7 +110,11 @@ export class AbstractRepository<TModel extends Model>
     options: PaginationOptions<TModel>,
   ): Promise<{ rows: TModel[]; count: number }> {
     try {
-      const { limit = 10, offset = 0, query, findOptions } = options
+      let { limit = 10, offset = 0, page, query, findOptions } = options
+
+      if (!offset && page) {
+        offset = this.calculateOffset(limit, page)
+      }
 
       return await this.model.findAndCountAll({
         where: query,

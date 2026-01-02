@@ -1,6 +1,4 @@
-import { UUID, UUIDV4 } from 'sequelize'
 import {
-  Model,
   Table,
   Column,
   PrimaryKey,
@@ -8,8 +6,8 @@ import {
   AllowNull,
   Default,
   DataType,
-  Sequelize,
 } from 'sequelize-typescript'
+import { BaseModel } from '../../src/base.model'
 
 interface UserCreationAttributes {
   name: string
@@ -18,7 +16,7 @@ interface UserCreationAttributes {
 }
 
 @Table({ paranoid: true })
-export class User extends Model<User, UserCreationAttributes> {
+export class User extends BaseModel<User, UserCreationAttributes> {
   @PrimaryKey
   @Default(DataType.UUIDV4)
   @Column

@@ -204,4 +204,29 @@ describe('UserRepository', () => {
     expect(paginated.rows.length).toBe(allRecords.length)
     expect(paginated.count).toBe(allRecords.length)
   })
+
+  it('should find all with pagination by offset', async () => {
+    const allRecords = await userRepo.findAll()
+
+    const offset = userRepo.calculateOffset(allRecords.length, 1)
+    const paginated = await userRepo.findAllPaginated({
+      limit: allRecords.length,
+      offset,
+    })
+
+    expect(offset).toEqual(0)
+    expect(paginated.rows.length).toBe(allRecords.length)
+    expect(paginated.count).toBe(allRecords.length)
+  })
+
+  it('should find all with pagination by page', async () => {
+    const allRecords = await userRepo.findAll()
+    const paginated = await userRepo.findAllPaginated({
+      limit: allRecords.length,
+      page: 1,
+    })
+
+    expect(paginated.rows.length).toBe(allRecords.length)
+    expect(paginated.count).toBe(allRecords.length)
+  })
 })
