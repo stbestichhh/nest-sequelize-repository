@@ -74,12 +74,12 @@ All methods return Promises.
 | `findAll(query?, options?)`                    | `query?: WhereOptions`, `options?: Omit<FindOptions, 'where'>`                                                                                      | Find all matching records                       |   
 | `findAllPaginated(options?)`                   | `limit?: number`, `offset?: number`, `page?: number`, `query?: WhereOptions`, `options?: Omit<FindAndCountOptions, 'where' \| 'offset' \| 'limit'>` | Find paginated records and total count          |
 | `updateByPk(primaryKey, dto, options?)`        | `primaryKey: string \| number`, `dto: Partial<Attributes<TModel>>`, `options?: SaveOptions`                                                         | Update record by primary key                    |
+| `delete(query, options?)`                      | `query?: WhereOptions`, `options?: Omit<DestroyOptions<Attributes<TModel>>, 'where'>`                                                               | Update record by primary key                    |
+| `restore(query, options?)`                     | `query?: WhereOptions`, `options?: Omit<RestoreOptions<Attributes<TModel>>, 'where'>`                                                               | Update record by primary key                    |
 | `deleteByPk(primaryKey, options?)`             | `primaryKey: string \| number`, `options?: InstanceDestroyOptions`                                                                                  | Delete (soft/hard) record by primary key        |
 | `restoreByPk(primaryKey, options?)`            | `primaryKey: string \| number`, `options?: InstanceRestoreOptions`                                                                                  | Restore previously soft-deleted record          |
 | `transaction(runInTransaction)`                | `(transaction: Transaction) => Promise<R>`                                                                                                          | Execute callback within a Sequelize transaction |
 | `calculateOffset(limit: number, page: number)` | `limit: number, page: number`                                                                                                                       | Calculate offset for page pagination            |
-
----
 
 ## 🚀 Quick Start
 

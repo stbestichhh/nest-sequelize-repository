@@ -3,10 +3,12 @@ import {
   BulkCreateOptions,
   CreateOptions,
   CreationAttributes,
+  DestroyOptions,
   FindAndCountOptions,
   FindOptions,
   InstanceDestroyOptions,
   InstanceRestoreOptions,
+  RestoreOptions,
   SaveOptions,
   Transaction,
   WhereOptions,
@@ -61,6 +63,14 @@ export interface IRepository<TModel extends Model> {
     primaryKey: string | number,
     options?: InstanceDestroyOptions,
   ): Promise<TModel | null>
+  delete(
+    query?: WhereOptions<Attributes<TModel>>,
+    options?: Omit<DestroyOptions<Attributes<TModel>>, 'where'>,
+  ): Promise<number>
+  restore(
+    query?: WhereOptions<Attributes<TModel>>,
+    options?: Omit<RestoreOptions<Attributes<TModel>>, 'where'>,
+  ): Promise<void>
   restoreByPk(
     primaryKey: string | number,
     options?: InstanceRestoreOptions,
