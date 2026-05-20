@@ -11,6 +11,8 @@ import {
   InstanceRestoreOptions,
   BulkCreateOptions,
   FindAndCountOptions,
+  DestroyOptions,
+  RestoreOptions,
 } from 'sequelize'
 import {
   AllowNull,
@@ -72,6 +74,14 @@ export interface IRepository<TModel extends Model> {
     dto: Partial<Attributes<TModel>>,
     options?: SaveOptions<Attributes<TModel>>,
   ): Promise<TModel | null>
+  delete(
+    query?: WhereOptions<Attributes<TModel>>,
+    options?: Omit<DestroyOptions<Attributes<TModel>>, 'where'>,
+  ): Promise<number>
+  restore(
+    query?: WhereOptions<Attributes<TModel>>,
+    options?: Omit<RestoreOptions<Attributes<TModel>>, 'where'>,
+  ): Promise<void>
   deleteByPk(
     primaryKey: string | number,
     options?: InstanceDestroyOptions,
@@ -234,6 +244,33 @@ export class AbstractRepository<
       return await entity.save(options)
     } catch (error) {
       this.logger.error(`updatedByPk: ${error}`)
+      throw new InternalServerErrorException()
+    }
+  }
+
+  public async delete(
+    query?: WhereOptions<Attributes<TModel>>,
+    options?: DestroyOptions<Attributes<TModel>>,
+  ): Promise<number> {
+    try {
+      return this.model.destroy({
+        where: query,
+        ...options,
+      })
+    } catch (error) {
+      this.logger.error(`delete: ${error}`)
+      throw new InternalServerErrorException()
+    }
+  }
+
+  public async restore(
+    query?: WhereOptions<Attributes<TModel>>,
+    options?: RestoreOptions<Attributes<TModel>>,
+  ): Promise<void> {
+    try {
+      return this.model.restore({ where: query, ...options })
+    } catch (error) {
+      this.logger.error(`restore: ${error}`)
       throw new InternalServerErrorException()
     }
   }

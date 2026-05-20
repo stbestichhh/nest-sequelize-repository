@@ -11,6 +11,8 @@ import {
   FindOptions,
   BulkCreateOptions,
   FindAndCountOptions,
+  DestroyOptions,
+  RestoreOptions,
 } from 'sequelize'
 import { Model, ModelCtor } from 'sequelize-typescript'
 
@@ -162,6 +164,30 @@ export interface IRepository<TModel extends Model> {
     dto: Partial<Attributes<TModel>>,
     options?: SaveOptions<Attributes<TModel>>,
   ): Promise<TModel | null>
+
+  /**
+   * Delete all records matching query
+   *
+   * @param query A Sequelize where clause.
+   * @param options Optional Sequelize destroy options.
+   * @returns A Promise represented amount of deleted records.
+   */
+  delete(
+    query?: WhereOptions<Attributes<TModel>>,
+    options?: Omit<DestroyOptions<Attributes<TModel>>, 'where'>,
+  ): Promise<number>
+
+  /**
+   * Restore all deleted records.
+   *
+   * @param query A Sequelize where clause.
+   * @param options Optional Sequelize restore options.
+   * @returns Promise<void>
+   */
+  restore(
+    query?: WhereOptions<Attributes<TModel>>,
+    options?: Omit<RestoreOptions<Attributes<TModel>>, 'where'>,
+  ): Promise<void>
 
   /**
    * Deletes (soft or hard) a record by its primary key.
@@ -321,6 +347,22 @@ export declare class AbstractRepository<
     dto: Partial<Attributes<TModel>>,
     options?: SaveOptions<Attributes<TModel>>,
   ): Promise<TModel | null>
+
+  /**
+   * @inheritdoc
+   */
+  delete(
+    query?: WhereOptions<Attributes<TModel>>,
+    options?: Omit<DestroyOptions<Attributes<TModel>>, 'where'>,
+  ): Promise<number>
+
+  /**
+   * @inheritdoc
+   */
+  restore(
+    query?: WhereOptions<Attributes<TModel>>,
+    options?: Omit<RestoreOptions<Attributes<TModel>>, 'where'>,
+  ): Promise<void>
 
   /**
    * @inheritdoc

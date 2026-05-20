@@ -10,6 +10,8 @@ import {
   InstanceDestroyOptions,
   InstanceRestoreOptions,
   BulkCreateOptions,
+  DestroyOptions,
+  RestoreOptions,
 } from 'sequelize'
 import { IRepository, PaginationOptions } from './IRepository'
 import { Model, ModelCtor } from 'sequelize-typescript'
@@ -169,6 +171,33 @@ export class AbstractRepository<
       return entity
     } catch (error) {
       this.logger.error(`deleteByPk: ${error}`)
+      throw new InternalServerErrorException()
+    }
+  }
+
+  public async delete(
+    query?: WhereOptions<Attributes<TModel>>,
+    options?: DestroyOptions<Attributes<TModel>>,
+  ): Promise<number> {
+    try {
+      return this.model.destroy({
+        where: query,
+        ...options,
+      })
+    } catch (error) {
+      this.logger.error(`delete: ${error}`)
+      throw new InternalServerErrorException()
+    }
+  }
+
+  public async restore(
+    query?: WhereOptions<Attributes<TModel>>,
+    options?: RestoreOptions<Attributes<TModel>>,
+  ): Promise<void> {
+    try {
+      return this.model.restore({ where: query, ...options })
+    } catch (error) {
+      this.logger.error(`restore: ${error}`)
       throw new InternalServerErrorException()
     }
   }

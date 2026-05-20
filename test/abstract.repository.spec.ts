@@ -184,6 +184,41 @@ describe('UserRepository', () => {
     expect(deletedUserFound).toBeNull()
   })
 
+  it('should delete many users', async () => {
+    await userRepo.insertMany([
+      { name: 'Bulk1', email: 'bulk1@ex.com' },
+      { name: 'Bulk2', email: 'bulk2@ex.com' },
+    ])
+
+    const deletedCount = await userRepo.delete({
+      email: { [Op.like]: 'bulk%' },
+    })
+
+    expect(deletedCount).toBe(2)
+  })
+
+  it('should restore many users', async () => {
+    await userRepo.insertMany([
+      { name: 'Restore1', email: 'res1@ex.com' },
+      { name: 'Restore2', email: 'res2@ex.com' },
+    ])
+
+    await userRepo.delete({
+      email: { [Op.like]: 'res%' },
+    })
+
+    await userRepo.restore({
+      email: { [Op.like]: 'res%' },
+    })
+
+    const users = await userRepo.findAll({
+      email: { [Op.like]: 'res%' },
+    })
+
+    expect(users).toHaveLength(2)
+    expect(users[0].deletedAt).toBeNull()
+  })
+
   it('should run operations inside a transaction', async () => {
     const result = await userRepo.transaction(async (tx) => {
       return await userRepo.create(
