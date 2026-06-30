@@ -12,6 +12,7 @@ If you are already using `sequelize-typescript`, this package helps you replace 
 - NestJS-friendly dependency injection
 - Optional logger injection
 - Extensible base classes for custom behavior
+- `@InjectRepository()` helper for model-based injection
 
 ## Why this exists
 
@@ -43,6 +44,7 @@ Use it when you want:
 - better testability
 - centralized pagination and soft delete behavior
 - a cleaner abstraction over Sequelize models
+- direct injection of repositories by model without writing a custom repository class
 
 ## Features
 
@@ -56,6 +58,7 @@ Use it when you want:
 | Transactions | `transaction()` for scoped transactional work |
 | Logger injection | Pass a NestJS logger for internal logging |
 | Extensibility | Override methods when you need custom validation or hooks |
+| Repository injection | Use `@InjectRepository(Model)` and a generated provider |
 
 ## Quick Start
 
@@ -129,6 +132,38 @@ export class UserService {
 }
 ```
 
+### 4. Inject a repository directly
+
+If you do not want a custom repository class for every model, you can inject a model-backed repository with `@InjectRepository()` and a provider created from the model.
+
+```ts
+import { InjectRepository, Nestlize } from '@nestlize/repository'
+
+@Module({
+  providers: [
+    UserService,
+    Nestlize.getProvider(User),
+  ],
+})
+export class UserModule {}
+```
+
+```ts
+@Injectable()
+export class UserService {
+  constructor(
+    @InjectRepository(User)
+    private readonly users: IRepository<User>,
+  ) {}
+
+  async listActiveUsers() {
+    return this.users.findAll({ active: true });
+  }
+}
+```
+
+This keeps the ergonomic NestJS injection style while avoiding one repository class per model.
+
 ## How it fits together
 
 ```mermaid
@@ -169,6 +204,8 @@ All methods return Promises.
 | `restoreByPk(primaryKey, options?)` | `primaryKey: string \| number`, `options?: InstanceRestoreOptions` | Restore a previously soft-deleted record |
 | `transaction(runInTransaction)` | `(transaction: Transaction) => Promise<R>` | Execute work in a Sequelize transaction |
 | `calculateOffset(limit, page)` | `limit: number`, `page: number` | Calculate page offset |
+| `InjectRepository(model)` | `model: ModelCtor<any>` | Decorator for injecting a model-backed repository |
+| `Nestlize.getProvider(model)` | `model: ModelCtor<any>` | Creates the NestJS provider for a model-backed repository |
 
 ## Pagination
 
@@ -239,7 +276,6 @@ export class UserRepository extends AbstractRepository<User> {
 
 This library currently focuses on the core repository workflow. Some ideas for future expansion:
 
-- `@InjectRepository()` support
 - specification-style query composition
 - async transaction propagation
 - cursor pagination
