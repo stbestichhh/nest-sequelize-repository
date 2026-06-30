@@ -1,6 +1,6 @@
 {
   "name": "@nestlize/repository",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "description": "Abstract repository and other database tools for Nest and Sequelize.js ORM",
   "keywords": [
     "sequelize.js",
