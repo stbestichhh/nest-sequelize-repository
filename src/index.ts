@@ -1,4 +1,9 @@
-import { InternalServerErrorException, Logger } from '@nestjs/common'
+import {
+  Inject,
+  InternalServerErrorException,
+  Logger,
+  Provider,
+} from '@nestjs/common'
 import {
   Transaction,
   WhereOptions,
@@ -25,6 +30,10 @@ import {
   ModelCtor,
   UpdatedAt,
 } from 'sequelize-typescript'
+
+const getRepositoryToken = (model: ModelCtor<any>) => {
+  return `NESTLIZE_REPOSITORY_${model.name}`
+}
 
 export interface PaginationOptions<TModel extends Model> {
   limit?: number
@@ -338,5 +347,26 @@ export class AbstractRepository<
 
   public calculateOffset(limit: number, page: number): number {
     return limit * (page - 1)
+  }
+}
+
+class NestlizeRepository<
+  TModel extends Model,
+> extends AbstractRepository<TModel> {
+  constructor(model: ModelCtor<TModel>) {
+    super(model)
+  }
+}
+
+export const InjectRepository = (model: ModelCtor<any>) => {
+  return Inject(getRepositoryToken(model))
+}
+
+export class Nestlize {
+  public static getProvider(model: ModelCtor<any>): Provider {
+    return {
+      provide: getRepositoryToken(model),
+      useFactory: () => new NestlizeRepository(model),
+    }
   }
 }

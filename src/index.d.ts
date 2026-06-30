@@ -1,4 +1,4 @@
-import { Logger } from '@nestjs/common'
+import { Inject, Logger, Provider } from '@nestjs/common'
 import {
   Transaction,
   WhereOptions,
@@ -15,6 +15,7 @@ import {
   RestoreOptions,
 } from 'sequelize'
 import { Model, ModelCtor } from 'sequelize-typescript'
+import { NestlizeRepository } from './nestlize.repository'
 
 /**
  * Options for the find with pagination.
@@ -391,4 +392,12 @@ export declare class AbstractRepository<
    * @inheritDoc
    */
   calculateOffset(limit: number, page: number): number
+}
+
+export declare function InjectRepository(
+  model: ModelCtor<any>,
+): PropertyDecorator & ParameterDecorator
+
+export declare class Nestlize {
+  getProvider(model: ModelCtor<any>): Provider
 }
