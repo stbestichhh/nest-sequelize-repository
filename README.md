@@ -1,25 +1,65 @@
-# 🧱 Abstract Sequelize Repository for NestJS
+# Abstract Sequelize Repository for NestJS
 
-Abstract repository pattern implementation for Sequelize ORM in NestJS projects.
+TypeORM-style generic repository support for NestJS projects that use Sequelize.
 
-- [Quick start](#-quick-start)
-- [Purpose](#-purpose)
-- [Methods](#-irepository-methods)
-- [Configuration](#-irepositoryoptions)
+If you are already using `sequelize-typescript`, this package helps you replace repetitive CRUD code with a reusable repository base that gives you:
 
-Supports:
+- Strong TypeScript typing
+- Generic CRUD helpers
+- Pagination support
+- Soft delete support
+- Transaction helpers
+- NestJS-friendly dependency injection
+- Optional logger injection
+- Extensible base classes for custom behavior
 
-* ✅ Custom DTO typing or Sequelize creation attributes
-* ✅ Custom error handling
-* ✅ Soft delete support (`paranoid: true`)
-* ✅ Pagination
-* ✅ Optional UUID auto-generation
-* ✅ Injected logger
-* ✅ Simplified transaction handling
+## Why this exists
 
----
+Most teams using Sequelize end up writing the same repository code over and over:
 
-## 📦 Installation
+```ts
+await User.findAll({ where: { active: true } })
+await User.findByPk(id)
+await User.create(dto)
+```
+
+This package turns that into a reusable repository layer:
+
+```ts
+@Injectable()
+export class UserRepository extends AbstractRepository<User> {
+  constructor(@InjectModel(User) userModel: typeof User) {
+    super(userModel);
+  }
+}
+
+const users = await userRepository.findAll({ active: true });
+```
+
+Use it when you want:
+
+- less boilerplate
+- a consistent repository API
+- better testability
+- centralized pagination and soft delete behavior
+- a cleaner abstraction over Sequelize models
+
+## Features
+
+| Feature | What you get |
+| --- | --- |
+| Generic repository base | Extend `AbstractRepository` for each model |
+| Strong typing | Works with custom DTOs or Sequelize creation attributes |
+| CRUD helpers | `create`, `insert`, `insertMany`, `find`, `update`, and delete helpers |
+| Pagination | `findAllPaginated()` and `calculateOffset()` |
+| Soft delete support | Works with `paranoid: true`, including restore helpers |
+| Transactions | `transaction()` for scoped transactional work |
+| Logger injection | Pass a NestJS logger for internal logging |
+| Extensibility | Override methods when you need custom validation or hooks |
+
+## Quick Start
+
+### Install
 
 ```bash
 npm install @nestlize/repository
@@ -29,63 +69,9 @@ yarn add @nestlize/repository
 pnpm add @nestlize/repository
 ```
 
----
-
-## 🧠 Purpose
-
-This package provides a reusable and extensible base repository class that works with `sequelize-typescript`. It reduces repetitive CRUD logic while keeping full flexibility for different entity needs.
-
----
-
-## 🔧 Features
-
-| Feature               | Description                                                        |
-|-----------------------|--------------------------------------------------------------------|
-| ✅ Abstract class      | Extend `AbstractRepository` for each model                         |
-| ✅ Generic typing      | Supports custom DTOs or defaults to Sequelize `CreationAttributes` |
-| ✅ Soft delete         | Supports `paranoid` models with `force` option                     |
-| ✅ Transaction utility | `repository.transaction()` for scoped logic                        |
-| ✅ Logger injection    | Optional NestJS logger for better traceability                     |
-| ✅ Flexible options    | Configure `logger`, `autoGenerateId`, etc.                         |
-
----
-
-## 🛠️ IRepositoryOptions
-
-Configuration options for the abstract repository:
-
-| Option           | Type                     | Default                 | Description                                           |
-|------------------|--------------------------|-------------------------|-------------------------------------------------------|
-| `logger`         | `Logger`                 | `NestJS default Logger` | Optional NestJS logger instance for internal logging  |
-
----
-
-## 🛠️ IRepository Methods
-
-All methods return Promises.
-
-| Method                                         | Parameters                                                                                                                                          | Description                                     | 
-|------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------|
-| `create(dto, options?)`                        | `dto: CreationAttributes<TModel>`, `options?: CreateOptions<TModel>`                                                                                | Creates a new record                            |  
-| `insert(dto, options?)`                        | Same as `create`                                                                                                                                    | Alias for `create`                              |  
-| `insertMany(dtos, options?)`                   | `dtos: CreationAttributes<TModel>[]`, `options?: BulkCreateOptions<Attributes<TModel>>`                                                             | Creates multiple records                        |   
-| `findByPk(primaryKey, options?)`               | `primaryKey: string \| number`, `options?: Omit<FindOptions, 'where'>`                                                                              | Find record by primary key                      |   
-| `findOne(query?, options?)`                    | `query?: WhereOptions`, `options?: Omit<FindOptions, 'where'>`                                                                                      | Find single record by query                     |   
-| `findAll(query?, options?)`                    | `query?: WhereOptions`, `options?: Omit<FindOptions, 'where'>`                                                                                      | Find all matching records                       |   
-| `findAllPaginated(options?)`                   | `limit?: number`, `offset?: number`, `page?: number`, `query?: WhereOptions`, `options?: Omit<FindAndCountOptions, 'where' \| 'offset' \| 'limit'>` | Find paginated records and total count          |
-| `updateByPk(primaryKey, dto, options?)`        | `primaryKey: string \| number`, `dto: Partial<Attributes<TModel>>`, `options?: SaveOptions`                                                         | Update record by primary key                    |
-| `delete(query, options?)`                      | `query?: WhereOptions`, `options?: Omit<DestroyOptions<Attributes<TModel>>, 'where'>`                                                               | Update record by primary key                    |
-| `restore(query, options?)`                     | `query?: WhereOptions`, `options?: Omit<RestoreOptions<Attributes<TModel>>, 'where'>`                                                               | Update record by primary key                    |
-| `deleteByPk(primaryKey, options?)`             | `primaryKey: string \| number`, `options?: InstanceDestroyOptions`                                                                                  | Delete (soft/hard) record by primary key        |
-| `restoreByPk(primaryKey, options?)`            | `primaryKey: string \| number`, `options?: InstanceRestoreOptions`                                                                                  | Restore previously soft-deleted record          |
-| `transaction(runInTransaction)`                | `(transaction: Transaction) => Promise<R>`                                                                                                          | Execute callback within a Sequelize transaction |
-| `calculateOffset(limit: number, page: number)` | `limit: number, page: number`                                                                                                                       | Calculate offset for page pagination            |
-
-## 🚀 Quick Start
-
 ### 1. Define a model
 
-[`BaseModel`](src/base.model.ts) extends from sequelize `Model` class adding timestamps
+[`BaseModel`](src/base.model.ts) extends Sequelize's `Model` and adds timestamps.
 
 ```ts
 import { BaseModel } from '@nestlize/repository'
@@ -105,12 +91,10 @@ export class User extends BaseModel<User> {
 }
 ```
 
----
-
-### 2. Create repository
+### 2. Create a repository
 
 ```ts
-import { AbstractRepository } from '@nestlize/repository';
+import { AbstractRepository } from '@nestlize/repository'
 
 @Injectable()
 export class UserRepository extends AbstractRepository<User> {
@@ -120,9 +104,7 @@ export class UserRepository extends AbstractRepository<User> {
 }
 ```
 
----
-
-### 3. Use in your service
+### 3. Use it in a service
 
 ```ts
 @Injectable()
@@ -133,50 +115,150 @@ export class UserService {
     return this.users.create(dto);
   }
 
-  async getUsers() {
-    return this.users.findAll();
+  async listActiveUsers() {
+    return this.users.findAll({ active: true });
   }
 
-  async updateUser(id: string, update: YourUpdateType) {
-    return this.users.updateByPk(id, update);
+  async getPage(page: number) {
+    return this.users.findAllPaginated({
+      limit: 20,
+      page,
+      query: { active: true },
+    });
   }
 }
 ```
 
----
+## How it fits together
 
-## ⚙️ Options
-
-You can pass options when instantiating:
-
-```ts
-{
-  logger: new MyCustomLogger('MyRepo'), // optional
-}
+```mermaid
+flowchart TD
+  A[Controller] --> B[Service]
+  B --> C[AbstractRepository]
+  C --> D[Sequelize Model]
+  D --> E[(Database)]
 ```
 
----
+## Before / After
 
-## 💡 Transaction usage
+| Without this library | With this library |
+| --- | --- |
+| Repeated CRUD code per model | Reusable base repository |
+| Manual pagination logic | `findAllPaginated()` |
+| Manual offset calculation | `calculateOffset()` |
+| Ad hoc soft delete handling | Built-in restore/delete helpers |
+| Transaction logic scattered around services | Centralized transaction helper |
+
+## API Overview
+
+All methods return Promises.
+
+| Method | Parameters | Description |
+| --- | --- | --- |
+| `create(dto, options?)` | `dto: CreationAttributes<TModel>`, `options?: CreateOptions<TModel>` | Create a new record |
+| `insert(dto, options?)` | Same as `create` | Alias for `create` |
+| `insertMany(dtos, options?)` | `dtos: CreationAttributes<TModel>[]`, `options?: BulkCreateOptions<Attributes<TModel>>` | Create multiple records |
+| `findByPk(primaryKey, options?)` | `primaryKey: string \| number`, `options?: Omit<FindOptions, 'where'>` | Find a record by primary key |
+| `findOne(query?, options?)` | `query?: WhereOptions`, `options?: Omit<FindOptions, 'where'>` | Find a single record by query |
+| `findAll(query?, options?)` | `query?: WhereOptions`, `options?: Omit<FindOptions, 'where'>` | Find all matching records |
+| `findAllPaginated(options?)` | `limit?: number`, `offset?: number`, `page?: number`, `query?: WhereOptions`, `options?: Omit<FindAndCountOptions, 'where' \| 'offset' \| 'limit'>` | Find records with pagination and total count |
+| `updateByPk(primaryKey, dto, options?)` | `primaryKey: string \| number`, `dto: Partial<Attributes<TModel>>`, `options?: SaveOptions` | Update a record by primary key |
+| `delete(query, options?)` | `query?: WhereOptions`, `options?: Omit<DestroyOptions<Attributes<TModel>>, 'where'>` | Soft delete or hard delete records that match a query |
+| `restore(query, options?)` | `query?: WhereOptions`, `options?: Omit<RestoreOptions<Attributes<TModel>>, 'where'>` | Restore soft-deleted records that match a query |
+| `deleteByPk(primaryKey, options?)` | `primaryKey: string \| number`, `options?: InstanceDestroyOptions` | Delete a record by primary key |
+| `restoreByPk(primaryKey, options?)` | `primaryKey: string \| number`, `options?: InstanceRestoreOptions` | Restore a previously soft-deleted record |
+| `transaction(runInTransaction)` | `(transaction: Transaction) => Promise<R>` | Execute work in a Sequelize transaction |
+| `calculateOffset(limit, page)` | `limit: number`, `page: number` | Calculate page offset |
+
+## Pagination
+
+`findAllPaginated()` supports both offset-based and page-based pagination.
 
 ```ts
-await repo.transaction(async (transaction) => {
-  await repo.insert(data, { transaction });
-  await transaction.commit();
+const result = await userRepository.findAllPaginated({
+  limit: 20,
+  page: 2,
+  query: { active: true },
 });
 ```
 
----
+If you already have an offset:
 
-## 🏗️ Advanced Use
+```ts
+const result = await userRepository.findAllPaginated({
+  limit: 20,
+  offset: 40,
+  query: { active: true },
+});
+```
 
-* Override methods like `create()` or `updateByPk()` to apply custom hooks or validation.
-* Extend with filters, scopes, or relations as needed.
+## Soft Delete
 
----
+Use Sequelize `paranoid: true` models and the repository will keep restore helpers available.
 
-## 📜 License
+```ts
+await userRepository.deleteByPk(userId);
+await userRepository.restoreByPk(userId);
+```
+
+## Transactions
+
+```ts
+await userRepository.transaction(async (transaction) => {
+  await userRepository.insert(
+    { name: 'Jane', email: 'jane@example.com' },
+    { transaction },
+  );
+});
+```
+
+## Configuration
+
+`AbstractRepository` accepts a logger instance when you need custom logging.
+
+```ts
+{
+  logger: new MyCustomLogger('UserRepository'),
+}
+```
+
+## Extending the base class
+
+The repository is designed to be overridden when your model needs custom behavior.
+
+```ts
+@Injectable()
+export class UserRepository extends AbstractRepository<User> {
+  async findActiveUsers() {
+    return this.findAll({ active: true });
+  }
+}
+```
+
+## Roadmap
+
+This library currently focuses on the core repository workflow. Some ideas for future expansion:
+
+- `@InjectRepository()` support
+- specification-style query composition
+- async transaction propagation
+- cursor pagination
+- query builder abstraction
+- repository events and hooks
+- multi-tenant support
+- testing utilities
+
+## Contributing
+
+Contributions are welcome.
+
+If you want to help, look for issues labeled:
+
+- `good first issue`
+- `help wanted`
+- `documentation`
+- `feature request`
+
+## License
 
 MIT © Kiril Yakymchuk
-
----
