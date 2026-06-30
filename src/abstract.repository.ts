@@ -35,6 +35,10 @@ export class AbstractRepository<
     this.logger = logger
   }
 
+  public getModel(): ModelCtor<TModel> {
+    return this.model
+  }
+
   public async create(
     dto: CreationAttributes<TModel>,
     options?: CreateOptions<Attributes<TModel>>,

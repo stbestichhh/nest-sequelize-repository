@@ -13,6 +13,7 @@ If you are already using `sequelize-typescript`, this package helps you replace 
 - Optional logger injection
 - Extensible base classes for custom behavior
 - `@InjectRepository()` helper for model-based injection
+- `getModel()` escape hatch for direct Sequelize access
 
 ## Why this exists
 
@@ -45,6 +46,7 @@ Use it when you want:
 - centralized pagination and soft delete behavior
 - a cleaner abstraction over Sequelize models
 - direct injection of repositories by model without writing a custom repository class
+- direct access to the underlying Sequelize model when you need lower-level methods
 
 ## Features
 
@@ -59,6 +61,7 @@ Use it when you want:
 | Logger injection | Pass a NestJS logger for internal logging |
 | Extensibility | Override methods when you need custom validation or hooks |
 | Repository injection | Use `@InjectRepository(Model)` and a generated provider |
+| Model escape hatch | Call `getModel()` when you need raw Sequelize methods |
 
 ## Quick Start
 
@@ -164,6 +167,20 @@ export class UserService {
 
 This keeps the ergonomic NestJS injection style while avoiding one repository class per model.
 
+## Direct model access
+
+If you need to call Sequelize model methods directly, the repository exposes the underlying model instance through `getModel()`.
+
+```ts
+const userModel = userRepository.getModel()
+
+const users = await userModel.findAll({
+  where: { active: true },
+})
+```
+
+This is useful for advanced cases where you want the repository for most operations, but still need raw model APIs occasionally.
+
 ## How it fits together
 
 ```mermaid
@@ -204,6 +221,7 @@ All methods return Promises.
 | `restoreByPk(primaryKey, options?)` | `primaryKey: string \| number`, `options?: InstanceRestoreOptions` | Restore a previously soft-deleted record |
 | `transaction(runInTransaction)` | `(transaction: Transaction) => Promise<R>` | Execute work in a Sequelize transaction |
 | `calculateOffset(limit, page)` | `limit: number`, `page: number` | Calculate page offset |
+| `getModel()` | `()` | Get the underlying Sequelize model instance |
 | `InjectRepository(model)` | `model: ModelCtor<any>` | Decorator for injecting a model-backed repository |
 | `Nestlize.getProvider(model)` | `model: ModelCtor<any>` | Creates the NestJS provider for a model-backed repository |
 

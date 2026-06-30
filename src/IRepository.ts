@@ -13,7 +13,7 @@ import {
   Transaction,
   WhereOptions,
 } from 'sequelize'
-import { Model } from 'sequelize-typescript'
+import { Model, ModelCtor } from 'sequelize-typescript'
 
 export interface PaginationOptions<TModel extends Model> {
   limit?: number
@@ -27,6 +27,7 @@ export interface PaginationOptions<TModel extends Model> {
 }
 
 export interface IRepository<TModel extends Model> {
+  getModel(): ModelCtor<TModel>
   create(
     dto: CreationAttributes<TModel>,
     options?: CreateOptions<TModel>,

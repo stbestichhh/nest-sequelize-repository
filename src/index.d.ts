@@ -70,6 +70,13 @@ export interface IRepositoryOptions {
  */
 export interface IRepository<TModel extends Model> {
   /**
+   * Get a model instance.
+   *
+   * @returns A model constructor instance.
+   */
+  getModel(): ModelCtor<TModel>
+
+  /**
    * Creates a new record in the database.
    *
    * @param dto The data to create record with.
@@ -284,6 +291,13 @@ export declare class AbstractRepository<
    * @param options Optional configuration options.
    */
   constructor(model: ModelCtor<TModel>, options?: IRepositoryOptions)
+
+  /**
+   * @inheritdoc
+   */
+  public getModel(): ModelCtor<TModel> {
+    return this.model
+  }
 
   /**
    * @inheritdoc
